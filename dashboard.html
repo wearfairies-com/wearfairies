@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/png" href="logo_icon.png"/>
+  <title>Lender Dashboard — Fairies</title>
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Cinzel:wght@400;500;600&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--void:#020c08;--forest:#071410;--canopy:#0a1e12;--moss:#133220;--gold:#c9a84c;--ember:#e2c068;--spark:#f5e199;--ivory:#f2ead6;--cream:#e0d4b8;--mist:#8aab92;--ghost:#4a6e55}
+    html{scroll-behavior:smooth}
+    body{background:var(--void);color:var(--ivory);font-family:'DM Sans',sans-serif;overflow-x:hidden;min-height:100vh}
+    body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23g)' opacity='0.06'/%3E%3C/svg%3E");pointer-events:none;z-index:8000;mix-blend-mode:screen;opacity:.45}
+
+    .dashboard{position:relative;z-index:1;display:flex;min-height:100vh;flex-direction:column}
+
+    nav{background:rgba(2,12,8,.97);backdrop-filter:blur(12px);border-bottom:1px solid rgba(201,168,76,.15);padding:1.4rem 3rem;display:flex;align-items:center;justify-content:space-between}
+    .nav-logo{font-family:'Great Vibes',cursive;font-size:2rem;color:var(--ember)}
+    .nav-user{display:flex;gap:2rem;align-items:center}
+    .nav-user-name{font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--mist)}
+    .logout-btn{font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);background:transparent;border:1px solid rgba(201,168,76,.2);padding:.5rem 1.2rem;cursor:pointer;transition:all .3s}
+    .logout-btn:hover{background:rgba(201,168,76,.08);border-color:var(--gold)}
+
+    .dashboard-content{flex:1;padding:3rem;display:grid;grid-template-columns:1fr 1fr;gap:3rem}
+
+    .section{background:rgba(2,12,8,.8);border:1px solid rgba(201,168,76,.15);padding:2rem}
+    .section-title{font-family:'Great Vibes',cursive;font-size:2rem;color:var(--ivory);margin-bottom:1.5rem}
+
+    .stat-box{background:var(--canopy);border:1px solid rgba(201,168,76,.12);padding:1.5rem;margin-bottom:1rem;text-align:center}
+    .stat-num{font-family:'Great Vibes',cursive;font-size:2.5rem;color:var(--ember)}
+    .stat-label{font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;color:var(--mist);margin-top:.5rem}
+
+    .btn{font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;padding:1rem 2rem;border:none;cursor:pointer;transition:all .3s;display:inline-block}
+    .btn-primary{background:var(--gold);color:var(--void)}
+    .btn-primary:hover{background:var(--spark)}
+    .btn-secondary{background:transparent;border:1px solid rgba(201,168,76,.3);color:var(--gold)}
+    .btn-secondary:hover{background:rgba(201,168,76,.08)}
+    .btn-danger{background:transparent;border:1px solid rgba(92,26,26,.5);color:#e87c7c}
+    .btn-danger:hover{background:rgba(92,26,26,.15)}
+
+    .stripe-box{background:rgba(26,92,46,.15);border:1px solid rgba(26,92,46,.3);padding:1.5rem;margin-bottom:1.5rem;border-radius:4px}
+    .stripe-status{font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--mist);margin-bottom:1rem}
+    .stripe-status.connected{color:#6fcf97}
+    .stripe-status.disconnected{color:#e87c7c}
+
+    .listings-list{display:flex;flex-direction:column;gap:1rem}
+    .listing-item{background:var(--canopy);border:1px solid rgba(201,168,76,.12);padding:1.5rem;display:flex;justify-content:space-between;align-items:center}
+    .listing-info h4{font-family:'Great Vibes',cursive;font-size:1.4rem;color:var(--ivory);margin-bottom:.3rem}
+    .listing-info p{font-family:'Cormorant Garamond',serif;font-size:.9rem;font-style:italic;color:var(--mist)}
+    .listing-actions{display:flex;gap:.5rem}
+    .listing-actions button{font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.1em;text-transform:uppercase;padding:.5rem 1rem;border:none;cursor:pointer;background:transparent;border:1px solid rgba(201,168,76,.2);color:var(--gold);transition:all .3s}
+    .listing-actions button:hover{background:rgba(201,168,76,.08)}
+
+    .empty{text-align:center;padding:2rem;color:var(--ghost);font-family:'Cormorant Garamond',serif;font-style:italic}
+
+    @media(max-width:1000px){
+      .dashboard-content{grid-template-columns:1fr}
+      nav{padding:1.2rem 1.5rem}
+    }
+  </style>
+</head>
+<body>
+
+<div class="dashboard">
+  <nav>
+    <div class="nav-logo">Fairies</div>
+    <div class="nav-user">
+      <div class="nav-user-name">Welcome, <span id="userName">User</span></div>
+      <button class="logout-btn" onclick="logout()">Log Out</button>
+    </div>
+  </nav>
+
+  <div class="dashboard-content">
+    <!-- LEFT COLUMN -->
+    <div>
+      <div class="section">
+        <h2 class="section-title">Your Earnings</h2>
+        
+        <div class="stat-box">
+          <div class="stat-num" id="totalEarnings">$0</div>
+          <div class="stat-label">Total Earned (40%)</div>
+        </div>
+
+        <div class="stat-box">
+          <div class="stat-num" id="activeListings">0</div>
+          <div class="stat-label">Active Listings</div>
+        </div>
+
+        <div class="stat-box">
+          <div class="stat-num" id="totalRentals">0</div>
+          <div class="stat-label">Total Rentals</div>
+        </div>
+      </div>
+
+      <div class="section" style="margin-top:2rem">
+        <h2 class="section-title">Stripe Account</h2>
+        
+        <div class="stripe-box">
+          <p class="stripe-status disconnected" id="stripeStatus">✕ Not Connected</p>
+          <p style="font-family:'Cormorant Garamond',serif;font-size:.9rem;font-style:italic;color:var(--ghost);margin-bottom:1rem">Connect your Stripe account to receive automatic payouts. 40% of every rental goes directly to your account.</p>
+          <button class="btn btn-primary" onclick="connectStripe()" id="stripeBtn">Connect Stripe ✦</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div>
+      <div class="section">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+          <h2 class="section-title">Your Listings</h2>
+          <a href="list.html?mode=lender" class="btn btn-primary">+ List a Piece</a>
+        </div>
+
+        <div id="listingsList" class="listings-list">
+          <div class="empty">Loading your listings...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  var db, currentUser, lenderProfile;
+
+  window.addEventListener('load', async function() {
+    db = window.supabase.createClient(
+      'https://abybbjhlyzitdvvqcdzf.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFieWJiamhseXppdGR2dnFjZHpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1MjEwMjYsImV4cCI6MjA5NjA5NzAyNn0.0xsA_yL_XzBAzKA3f1wD3r5rYsFJ9a6ARG-QNVJdjSw'
+    );
+
+    // Check auth
+    var session = await db.auth.getSession();
+    if(!session.data.session) {
+      window.location.href = 'auth.html';
+      return;
+    }
+
+    currentUser = session.data.session.user;
+    document.getElementById('userName').textContent = currentUser.email.split('@')[0];
+
+    // Load lender profile
+    var profileRes = await db.from('lenders').select('*').eq('user_id', currentUser.id).single();
+    if(profileRes.data) {
+      lenderProfile = profileRes.data;
+      updateStripeStatus();
+    }
+
+    // Load listings
+    loadListings();
+  });
+
+  async function loadListings(){
+    var res = await db.from('listings').select('*').eq('lister_email', currentUser.email).order('created_at', {ascending:false});
+    var listings = res.data || [];
+
+    var container = document.getElementById('listingsList');
+    if(listings.length === 0) {
+      container.innerHTML = '<div class="empty">No listings yet. <a href="list.html?mode=lender" style="color:var(--gold)">Create your first one →</a></div>';
+      return;
+    }
+
+    container.innerHTML = listings.map(l => `
+      <div class="listing-item">
+        <div class="listing-info">
+          <h4>${l.title}</h4>
+          <p>$${l.price_per_night}/night · Status: <span style="color:var(--gold)">${l.status}</span></p>
+        </div>
+        <div class="listing-actions">
+          <button onclick="editListing('${l.id}')">Edit</button>
+          <button onclick="deleteListing('${l.id}')" class="danger">Delete</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function updateStripeStatus(){
+    var statusEl = document.getElementById('stripeStatus');
+    var btnEl = document.getElementById('stripeBtn');
+    
+    if(lenderProfile.stripe_connected_account) {
+      statusEl.textContent = '✓ Connected';
+      statusEl.classList.remove('disconnected');
+      statusEl.classList.add('connected');
+      btnEl.textContent = 'Manage Stripe';
+    } else {
+      statusEl.textContent = '✕ Not Connected';
+      statusEl.classList.add('disconnected');
+      statusEl.classList.remove('connected');
+      btnEl.textContent = 'Connect Stripe ✦';
+    }
+  }
+
+  function connectStripe(){
+    // Stripe Connect OAuth flow
+    var clientId = 'ca_placeholder'; // Replace with actual client ID
+    var redirectUri = encodeURIComponent('https://wearfairies.com/auth/stripe-callback');
+    var state = btoa(JSON.stringify({user_id: currentUser.id, from_dashboard: true}));
+    
+    window.location.href = `https://connect.stripe.com/oauth/authorize?response_type=code&scope=read_write&client_id=${clientId}&state=${state}&redirect_uri=${redirectUri}`;
+  }
+
+  async function editListing(id){
+    // Navigate to list.html with edit mode
+    window.location.href = `list.html?mode=lender&edit=${id}`;
+  }
+
+  async function deleteListing(id){
+    if(!confirm('Delete this listing permanently?')) return;
+    
+    var res = await db.from('listings').delete().eq('id', id);
+    if(!res.error) {
+      loadListings();
+    }
+  }
+
+  async function logout(){
+    await db.auth.signOut();
+    window.location.href = 'auth.html';
+  }
+</script>
+</body>
+</html>

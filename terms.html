@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/png" href="logo_icon.png"/>
+  <title>Terms & Policies — Fairies</title>
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Cinzel:wght@400;500;600&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --void:#020c08;--forest:#071410;--canopy:#0a1e12;
+      --gold:#c9a84c;--ember:#e2c068;--spark:#f5e199;
+      --ivory:#f2ead6;--cream:#e0d4b8;--mist:#8aab92;--ghost:#4a6e55;
+    }
+    html{scroll-behavior:smooth}
+    body{background:var(--void);color:var(--ivory);font-family:'DM Sans',sans-serif;overflow-x:hidden}
+
+    body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23g)' opacity='0.05'/%3E%3C/svg%3E");pointer-events:none;z-index:8000;mix-blend-mode:screen;opacity:.4}
+
+    nav{position:fixed;top:0;left:0;right:0;z-index:700;display:flex;align-items:center;justify-content:space-between;padding:1.4rem 3rem;background:rgba(2,12,8,.97);backdrop-filter:blur(12px)}
+    .logo-wrap{display:flex;align-items:center;gap:.6rem;text-decoration:none}
+    .nav-logo-icon{height:46px;width:auto;filter:drop-shadow(0 0 8px rgba(201,168,76,.25))}
+    .nav-logo-text{font-family:'Great Vibes',cursive;font-size:2.2rem;color:var(--ember);text-shadow:0 0 30px rgba(201,168,76,.3);line-height:1}
+    .nav-back{font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--mist);text-decoration:none;transition:color .3s}
+    .nav-back:hover{color:var(--ember)}
+    @media(max-width:800px){nav{padding:1.1rem 1.5rem}}
+
+    /* PAGE HEADER */
+    .page-header{padding:9rem 3rem 5rem;text-align:center;background:linear-gradient(180deg,var(--void) 0%,var(--forest) 100%);position:relative;overflow:hidden}
+    .page-header::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 30%,rgba(38,96,64,.18) 0%,transparent 60%)}
+    .page-eyebrow{font-family:'Cinzel',serif;font-size:.56rem;letter-spacing:.48em;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:1.2rem;position:relative;z-index:1}
+    .page-title{font-family:'Great Vibes',cursive;font-size:clamp(3rem,7vw,6rem);color:var(--ivory);line-height:1;margin-bottom:1rem;position:relative;z-index:1;text-shadow:0 2px 40px rgba(201,168,76,.15)}
+    .page-updated{font-family:'Cormorant Garamond',serif;font-size:.9rem;font-style:italic;color:var(--ghost);position:relative;z-index:1}
+
+    /* TAB NAV */
+    .policy-tabs{
+      display:flex;justify-content:center;gap:0;
+      background:rgba(7,20,16,.95);
+      border-top:1px solid rgba(201,168,76,.1);
+      border-bottom:1px solid rgba(201,168,76,.1);
+      position:sticky;top:0;z-index:600;
+      backdrop-filter:blur(12px);
+      flex-wrap:wrap;
+    }
+    .ptab{
+      font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;
+      padding:1.1rem 2.5rem;background:transparent;border:none;
+      color:var(--mist);cursor:pointer;transition:all .3s;
+      border-right:1px solid rgba(201,168,76,.1);
+    }
+    .ptab:last-child{border-right:none}
+    .ptab.active{background:rgba(201,168,76,.08);color:var(--ember)}
+    .ptab:hover:not(.active){color:var(--gold)}
+
+    /* CONTENT */
+    .policy-content{max-width:800px;margin:0 auto;padding:6rem 3rem 9rem}
+    .policy-section{display:none}
+    .policy-section.active{display:block}
+
+    .policy-intro{
+      font-family:'Cormorant Garamond',serif;font-size:1.25rem;font-style:italic;font-weight:300;
+      color:var(--mist);line-height:2;margin-bottom:4rem;
+      padding-bottom:3rem;border-bottom:1px solid rgba(201,168,76,.1);
+    }
+    .policy-intro strong{color:var(--ember);font-style:normal}
+
+    h2.policy-h2{
+      font-family:'Great Vibes',cursive;font-size:2.8rem;
+      color:var(--ivory);margin:3.5rem 0 1.5rem;
+      text-shadow:0 2px 20px rgba(201,168,76,.1);
+    }
+    h3.policy-h3{
+      font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.15em;text-transform:uppercase;
+      color:var(--gold);margin:2.5rem 0 1rem;
+    }
+    .policy-text{
+      font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-style:italic;font-weight:300;
+      color:var(--mist);line-height:1.95;margin-bottom:1.2rem;
+    }
+    .policy-text strong{color:var(--ivory);font-style:normal;font-weight:400}
+    .policy-list{
+      list-style:none;margin:1rem 0 1.5rem;
+      display:flex;flex-direction:column;gap:.8rem;
+    }
+    .policy-list li{
+      font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-style:italic;font-weight:300;
+      color:var(--mist);line-height:1.7;padding-left:1.5rem;position:relative;
+    }
+    .policy-list li::before{content:'✦';position:absolute;left:0;color:var(--gold);font-size:.7rem;top:.3rem}
+
+    .policy-box{
+      background:rgba(201,168,76,.04);border:1px solid rgba(201,168,76,.15);
+      border-left:3px solid var(--gold);
+      padding:1.8rem 2rem;margin:2rem 0;
+    }
+    .policy-box p{
+      font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-style:italic;
+      color:var(--ivory);line-height:1.8;
+    }
+    .policy-box strong{color:var(--ember)}
+
+    .g-rule{display:flex;align-items:center;gap:1rem;margin:3rem 0}
+    .g-rule-line{flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,.25),transparent)}
+    .g-rule-gem{width:6px;height:6px;background:var(--gold);transform:rotate(45deg);flex-shrink:0}
+
+    /* FOOTER */
+    footer{background:rgba(1,6,3,1);border-top:1px solid rgba(201,168,76,.12);padding:2.5rem 4rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1.5rem}
+    .foot-logo{font-family:'Great Vibes',cursive;font-size:2rem;color:var(--ember)}
+    .foot-copy{font-family:'Cormorant Garamond',serif;font-size:.85rem;font-style:italic;color:rgba(138,171,146,.3)}
+    .foot-links{display:flex;gap:2rem;list-style:none}
+    .foot-links a{font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mist);text-decoration:none;transition:color .3s}
+    .foot-links a:hover{color:var(--ember)}
+
+    @media(max-width:600px){
+      .policy-content{padding:4rem 1.5rem 7rem}
+      .ptab{padding:.9rem 1.2rem;font-size:.52rem}
+      footer{flex-direction:column;align-items:flex-start;padding:2rem 1.5rem}
+    }
+  </style>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-VPM2FPG2DW"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-VPM2FPG2DW');
+  </script>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="logo-wrap">
+    <img src="logo_icon.png" class="nav-logo-icon" alt="Fairies" onerror="this.style.display='none'"/>
+    <span class="nav-logo-text">Fairies</span>
+  </a>
+  <a href="index.html" class="nav-back">← Back to Home</a>
+</nav>
+
+<!-- HEADER -->
+<div class="page-header">
+  <span class="page-eyebrow">✦ Legal & Policies ✦</span>
+  <h1 class="page-title">Terms & Policies</h1>
+  <p class="page-updated">Last updated: June 2026</p>
+</div>
+
+<!-- TABS -->
+<div class="policy-tabs">
+  <button class="ptab active" onclick="showPolicy('terms')">Terms of Service</button>
+  <button class="ptab" onclick="showPolicy('rental')">Rental Agreement</button>
+  <button class="ptab" onclick="showPolicy('damage')">Damage Policy</button>
+  <button class="ptab" onclick="showPolicy('privacy')">Privacy Policy</button>
+</div>
+
+<!-- CONTENT -->
+<div class="policy-content">
+
+  <!-- ── TERMS OF SERVICE ── -->
+  <div class="policy-section active" id="terms">
+    <p class="policy-intro">
+      Welcome to <strong>Fairies</strong>. By using this website or our services, you agree to these terms. Please read them — they're written in plain English because we believe you deserve to understand what you're agreeing to.
+    </p>
+
+    <h2 class="policy-h2">What Fairies Is</h2>
+    <p class="policy-text">Fairies is a peer-to-peer dress lending platform based in Boston, Massachusetts. We connect people who want to rent clothing (Renters) with people who want to lend their clothing (Lenders). Fairies acts as the intermediary — handling all logistics, delivery, collection, and payment processing.</p>
+    <p class="policy-text">Fairies is not a retail store. We do not own the clothing listed on the platform. All pieces belong to individual Lenders.</p>
+
+    <div class="g-rule"><div class="g-rule-line"></div><div class="g-rule-gem"></div><div class="g-rule-line"></div></div>
+
+    <h2 class="policy-h2">For Renters</h2>
+    <h3 class="policy-h3">Booking & Payment</h3>
+    <ul class="policy-list">
+      <li>All rentals must be booked in advance through the Fairies platform or by contacting us directly.</li>
+      <li>Payment is required to confirm your booking. Until payment is received, your booking is not guaranteed.</li>
+      <li>Prices are set by individual Lenders and displayed on each listing.</li>
+      <li>A delivery fee may apply depending on your location. This will be communicated before you confirm.</li>
+    </ul>
+
+    <h3 class="policy-h3">Delivery & Collection</h3>
+    <ul class="policy-list">
+      <li>We deliver to your door the day before or the morning of your event date.</li>
+      <li>We collect from your door the day after your event date.</li>
+      <li>You must be available or arrange for someone to receive and return the item.</li>
+      <li>If collection is missed, a $20 per day late fee applies until the item is collected.</li>
+    </ul>
+
+    <h3 class="policy-h3">Cancellations</h3>
+    <ul class="policy-list">
+      <li>Cancellations made more than 48 hours before delivery receive a full refund.</li>
+      <li>Cancellations made within 48 hours of delivery are non-refundable.</li>
+      <li>If Fairies cancels your booking for any reason, you will receive a full refund.</li>
+    </ul>
+
+    <div class="g-rule"><div class="g-rule-line"></div><div class="g-rule-gem"></div><div class="g-rule-line"></div></div>
+
+    <h2 class="policy-h2">For Lenders</h2>
+    <h3 class="policy-h3">Listing Your Pieces</h3>
+    <ul class="policy-list">
+      <li>By listing a piece on Fairies you confirm that you own it and have the right to lend it.</li>
+      <li>All items must be clean, in good condition, and accurately described.</li>
+      <li>Fairies reserves the right to decline or remove any listing at our discretion.</li>
+      <li>You agree to make your piece available on the dates confirmed at booking.</li>
+    </ul>
+
+    <h3 class="policy-h3">Earnings</h3>
+    <ul class="policy-list">
+      <li>You earn a percentage of each rental fee. Your exact split will be agreed with Fairies before your listing goes live.</li>
+      <li>Earnings are paid out after each successful rental is completed.</li>
+      <li>Fairies retains a service fee from each transaction to cover delivery, platform costs, and operations.</li>
+    </ul>
+
+    <div class="g-rule"><div class="g-rule-line"></div><div class="g-rule-gem"></div><div class="g-rule-line"></div></div>
+
+    <h2 class="policy-h2">General</h2>
+    <p class="policy-text">Fairies operates in Boston, Massachusetts. By using our services you agree to these terms. We reserve the right to update these terms at any time — continued use of the platform constitutes acceptance of any changes.</p>
+    <p class="policy-text">For questions about these terms contact us at <strong>wearfairies@outlook.com</strong></p>
+  </div>
+
+  <!-- ── RENTAL AGREEMENT ── -->
+  <div class="policy-section" id="rental">
+    <p class="policy-intro">
+      This rental agreement is entered into between <strong>Fairies Dress Lending</strong> ("Fairies") and the individual making a rental booking ("Renter"). By confirming a booking with Fairies, the Renter agrees to all terms below.
+    </p>
+
+    <div class="policy-box">
+      <p><strong>Plain English summary:</strong> You're borrowing someone's clothing. Treat it like it's not yours — because it isn't. Return it on time, in the same condition you received it. If something goes wrong, you're responsible.</p>
+    </div>
+
+    <h2 class="policy-h2">The Rental</h2>
+    <p class="policy-text">Fairies will deliver the agreed clothing item(s) to the Renter's specified address on the delivery date. The Renter agrees to return the item(s) when collected by Fairies on the collection date.</p>
+    <ul class="policy-list">
+      <li><strong>Delivery date:</strong> The day before the Renter's event date</li>
+      <li><strong>Collection date:</strong> The day after the Renter's event date</li>
+      <li>The rental period covers delivery through collection only</li>
+    </ul>
+
+    <div class="g-rule"><div class="g-rule-line"></div><div class="g-rule-gem"></div><div class="g-rule-line"></div></div>
+
+    <h2 class="policy-h2">Renter Responsibilities</h2>
+    <ul class="policy-list">
+      <li>The Renter agrees to use the item(s) for personal use only — not for resale, subletting, or commercial use.</li>
+      <li>The Renter agrees not to alter, modify, or permanently change the item(s) in any way.</li>
+      <li>The Renter agrees to store the item(s) safely and keep them away from risk of damage.</li>
+      <li>The Renter agrees to be available for collection on the agreed collection date.</li>
+      <li>The Renter agrees to return the item(s) in the same condition as received, accounting for normal wear.</li>
+    </ul>
+
+    <div class="g-rule"><div class="g-rule-line"></div><div class="g-rule-gem"></div><div class="g-rule-line"></div></div>
+
+    <h2 class="policy-h2">Late Returns</h2>
+    <div class="policy-box">
+      <p>If the item is not ready for collection on the agreed collection date, a <strong>late fee of $20 per day</strong> will be charged to the Renter until the item is collected. This fee is non-negotiable.</p>
+    </div>
+
+    <div class="g-rule"><div class="g-rule-line"></div><div class="g-rule-gem"></div><div class="g-rule-line"></div></div>
+
+    <h2 class="policy-h2">Damage & Loss</h2>
+    <p class="policy-text">The Renter is fully responsible for any damage to or loss of the item(s) during the rental period. See our full Damage Policy for details on how damage is assessed and charged.</p>
+    <p class="policy-text">By confirming a booking, the Renter agrees to pay the full replacement value of the item(s) in the event of damage beyond normal wear, staining, or loss.</p>
+
+    <div class="g-rule"><div class="g-rule-line"></div><div class="g-rule-gem"></div><div class="g-rule-line"></div></div>
+
+    <h2 class="policy-h2">Agreement</h2>
+    <p class="policy-text">By completing a booking with Fairies — whether through the website form, message, or any other means — the Renter confirms they have read, understood, and agreed to this rental agreement in full.</p>
+    <p class="policy-text">Questions? Contact us at <strong>wearfairies@outlook.com</strong></p>
+  </div>
+
+  <!-- ── DAMAGE POLICY ── -->
+  <div class="policy-section" id="damage">
+    <p class="policy-intro">
+      We handle every piece with care. We expect Renters to do the same. This policy exists to protect <strong>Lenders</strong> — the real people whose clothing you're borrowing.
+    </p>
+
+    <h2 class="policy-h2">What Counts as Damage</h2>
+    <ul class="policy-list">
+      <li><strong>Stains</strong> — any staining that cannot be removed by standard dry cleaning</li>
+      <li><strong>Tears or rips</strong> — any tearing of fabric, seams, or embellishments</li>
+      <li><strong>Stretching or distortion</strong> — any permanent change to the shape or fit of the item</li>
+      <li><strong>Burns or scorch marks</strong></li>
+      <li><strong>Missing components</strong> — buttons, belts, embellishments, or accessories that are part of the listing</li>
+      <li><strong>Loss</strong> — failure to return the item at all</li>
+    </ul>
+
+    <h3 class="policy-h3">What Does NOT Count as Damage</h3>
+    <ul class="policy-list">
+      <li>Minor creasing or wrinkling from wear</li>
+      <li>Light scent from normal wear (we steam all items before relisting)</li>
+      <li>Pre-existing condition documented before the rental</li>
+    </ul>
+
+    <div class="g-rule"><div class="g-rule-line"></div><div class="g-rule-gem"></div><div class="g-rule-line"></div></div>
+
+    <h2 class="policy-h2">How Damage is Assessed</h2>
+    <p class="policy-text">Every item is inspected by Fairies before delivery and again upon collection. We photograph all items before dispatch as a record of their condition.</p>
+    <p class="policy-text">If damage is identified on collection, the Renter will be notified within 24 hours with photographic evidence.</p>
+
+    <div class="g-rule"><div class="g-rule-line"></div><div class="g-rule-gem"></div><div class="g-rule-line"></div></div>
+
+    <h2 class="policy-h2">Damage Charges</h2>
+    <div class="policy-box">
+      <p><strong>Minor damage</strong> (stains removable by dry cleaning, minor repairs): cost of professional cleaning or repair, minimum $30</p>
+    </div>
+    <div class="policy-box">
+      <p><strong>Major damage</strong> (irreparable tears, permanent staining, severe distortion): <strong>full replacement value</strong> of the item as listed by the Lender</p>
+    </div>
+    <div class="policy-box">
+      <p><strong>Loss</strong> (item not returned): <strong>full replacement value</strong> plus a $50 administrative fee</p>
+    </div>
+
+    <p class="policy-text">Fairies retains its service fee regardless of damage outcome. The remaining charge goes directly to the Lender.</p>
+
+    <div class="g-rule"><div class="g-rule-line"></div><div class="g-rule-gem"></div><div class="g-rule-line"></div></div>
+
+    <h2 class="policy-h2">Disputes</h2>
+    <p class="policy-text">If a Renter disputes a damage assessment, they may contact Fairies within 48 hours of being notified. We will review the photographic evidence and make a final decision. Our decision is final.</p>
+    <p class="policy-text">Questions? Contact us at <strong>wearfairies@outlook.com</strong></p>
+  </div>
+
+  <!-- ── PRIVACY POLICY ── -->
+  <div class="policy-section" id="privacy">
+    <p class="policy-intro">
+      Your privacy matters to us. This policy explains what information we collect, how we use it, and how we protect it. <strong>We will never sell your data.</strong> Ever.
+    </p>
+
+    <h2 class="policy-h2">What We Collect</h2>
+    <ul class="policy-list">
+      <li><strong>Name and contact details</strong> — when you submit a listing, booking request, or message</li>
+      <li><strong>Address information</strong> — delivery and pickup addresses for logistics purposes only</li>
+      <li><strong>Payment information</strong> — processed securely through Stripe. Fairies never sees or stores your card details</li>
+      <li><strong>Photos of clothing items</strong> — submitted by Lenders for listing purposes</li>
+    </ul>
+
+    <div class="g-rule"><div class="g-rule-line"></div><div class="g-rule-gem"></div><div class="g-rule-line"></div></div>
+
+    <h2 class="policy-h2">How We Use It</h2>
+    <ul class="policy-list">
+      <li>To process and fulfil your rental booking or listing</li>
+      <li>To coordinate delivery and collection logistics</li>
+      <li>To contact you about your booking or listing</li>
+      <li>To process payments and payouts</li>
+      <li>To improve our service</li>
+    </ul>
+
+    <h3 class="policy-h3">What We Never Do</h3>
+    <ul class="policy-list">
+      <li>Sell your personal data to third parties</li>
+      <li>Share your address with anyone other than those directly involved in your rental</li>
+      <li>Send you unsolicited marketing without your consent</li>
+      <li>Store your payment card details</li>
+    </ul>
+
+    <div class="g-rule"><div class="g-rule-line"></div><div class="g-rule-gem"></div><div class="g-rule-line"></div></div>
+
+    <h2 class="policy-h2">Your Rights</h2>
+    <p class="policy-text">You have the right to request access to the personal data we hold about you, request that we correct or delete it, and opt out of any communications at any time. To exercise any of these rights contact us at <strong>wearfairies@outlook.com</strong></p>
+
+    <div class="g-rule"><div class="g-rule-line"></div><div class="g-rule-gem"></div><div class="g-rule-line"></div></div>
+
+    <h2 class="policy-h2">Cookies</h2>
+    <p class="policy-text">This website does not use tracking cookies. We do not use Google Analytics or any third-party tracking software. The only external services we use are Stripe (payments) and Formspree (form submissions), both of which have their own privacy policies.</p>
+
+    <p class="policy-text" style="margin-top:2rem">Questions about your privacy? Contact us at <strong>wearfairies@outlook.com</strong></p>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-logo">Fairies</div>
+  <ul class="foot-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="wardrobe.html">Browse</a></li>
+    <li><a href="list.html">Get Started</a></li>
+  </ul>
+  <p class="foot-copy">© 2026 Fairies Dress Lending · Boston, MA</p>
+</footer>
+
+<script>
+  function showPolicy(id){
+    document.querySelectorAll('.policy-section').forEach(s=>s.classList.remove('active'));
+    document.querySelectorAll('.ptab').forEach(t=>t.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    event.target.classList.add('active');
+    window.scrollTo({top:document.querySelector('.policy-tabs').offsetTop - 10, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

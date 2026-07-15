@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Connecting Stripe...</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
+  <style>
+    body{background:#020c08;color:#f2ead6;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}
+    .container{text-align:center}
+    .title{font-family:'Great Vibes',cursive;font-size:3rem;color:#c9a84c;margin-bottom:1rem}
+    .message{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-style:italic;color:#8aab92}
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <p class="title">Fairies</p>
+  <p class="message" id="message">Connecting your Stripe account...</p>
+</div>
+
+<script>
+  window.addEventListener('load', async function() {
+    var db = window.supabase.createClient(
+      'https://abybbjhlyzitdvvqcdzf.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFieWJiamhseXppdGR2dnFjZHpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1MjEwMjYsImV4cCI6MjA5NjA5NzAyNn0.0xsA_yL_XzBAzKA3f1wD3r5rYsFJ9a6ARG-QNVJdjSw'
+    );
+
+    // Get auth code from URL
+    var params = new URLSearchParams(window.location.search);
+    var code = params.get('code');
+    var state = params.get('state');
+    
+    if(!code) {
+      document.getElementById('message').textContent = 'Error: No authorization code received.';
+      return;
+    }
+
+    try {
+      var stateData = JSON.parse(atob(state));
+      var userId = stateData.user_id;
+
+      // Exchange code for connected account ID
+      // This would normally be done on your backend, but for MVP we'll store the code
+      // In production, use Netlify function to exchange code for access token
+      
+      var res = await db.from('lenders').update({
+        stripe_auth_code: code,
+        stripe_connected_account: 'acct_' + Date.now() // Placeholder
+      }).eq('user_id', userId);
+
+      if(res.error) throw res.error;
+
+      document.getElementById('message').textContent = 'Connected! Redirecting...';
+      setTimeout(() => window.location.href = 'dashboard.html', 2000);
+
+    } catch(err) {
+      document.getElementById('message').textContent = 'Error: ' + err.message;
+    }
+  });
+</script>
+</body>
+</html>

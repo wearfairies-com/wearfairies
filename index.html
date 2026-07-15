@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/png" href="logo_icon.png"/>
+  <title>Fairies — Wear the Magic</title>
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Cinzel:wght@400;500;600&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --void:#020c08;--forest:#071410;--canopy:#0a1e12;--moss:#0f2a18;
+      --gold:#c9a84c;--ember:#e2c068;--spark:#f5e199;
+      --ivory:#f2ead6;--cream:#e0d4b8;--mist:#8aab92;--ghost:#4a6e55;
+    }
+    html{scroll-behavior:smooth}
+    body{background:var(--void);color:var(--ivory);font-family:'DM Sans',sans-serif;overflow-x:hidden;cursor:none}
+
+    /* ── FAIRY CURSOR ── */
+    #fairyCursor{
+      position:fixed;pointer-events:none;z-index:9999;
+      transform:translate(-50%,-60%);
+      width:28px;height:28px;
+      transition:transform .1s ease;
+    }
+    #fairyCursor svg{width:100%;height:100%}
+    #cursorTrail{position:fixed;top:0;left:0;pointer-events:none;z-index:9998;width:100%;height:100%}
+
+    /* ── GRAIN ── */
+    body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23g)' opacity='0.05'/%3E%3C/svg%3E");pointer-events:none;z-index:8000;mix-blend-mode:screen;opacity:.4}
+
+    /* ── NAV ── */
+    nav{position:fixed;top:0;left:0;right:0;z-index:700;display:flex;align-items:center;justify-content:space-between;padding:1.4rem 3rem;background:linear-gradient(180deg,rgba(2,12,8,.97) 0%,transparent 100%);transition:background .4s}
+    nav.scrolled{background:rgba(2,12,8,.97);backdrop-filter:blur(12px)}
+    .logo-wrap{display:flex;align-items:center;gap:.6rem;text-decoration:none}
+    .nav-logo-icon{height:46px;width:auto;filter:drop-shadow(0 0 8px rgba(201,168,76,.25));transition:filter .3s,transform .4s}
+    .logo-wrap:hover .nav-logo-icon{filter:drop-shadow(0 0 18px rgba(201,168,76,.6));transform:rotate(-4deg) scale(1.08)}
+    .nav-logo-text{font-family:'Great Vibes',cursive;font-size:2.2rem;color:var(--ember);text-shadow:0 0 30px rgba(201,168,76,.3);line-height:1}
+    .nav-links{display:flex;gap:2.5rem;list-style:none}
+    .nav-links a{font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.24em;text-transform:uppercase;color:var(--mist);text-decoration:none;transition:color .3s}
+    .nav-links a:hover{color:var(--ember)}
+    .nav-pill{font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:var(--void);background:var(--gold);border:none;padding:.65rem 1.5rem;cursor:none;transition:background .3s,transform .2s,box-shadow .3s;text-decoration:none;display:inline-block}
+    .nav-pill:hover{background:var(--spark);transform:translateY(-1px);box-shadow:0 6px 24px rgba(201,168,76,.35)}
+    @media(max-width:800px){.nav-links{display:none};nav{padding:1.1rem 1.5rem}}
+
+    /* ── HERO ── */
+    .hero{
+      min-height:100vh;position:relative;overflow:hidden;
+      display:flex;align-items:center;justify-content:center;
+    }
+    .hero-bg{
+      position:absolute;inset:0;
+      background:
+        radial-gradient(ellipse 140% 70% at 50% -5%,rgba(38,96,64,.22) 0%,transparent 55%),
+        radial-gradient(ellipse 60% 60% at 15% 70%,rgba(15,42,24,.8) 0%,transparent 55%),
+        radial-gradient(ellipse 60% 60% at 85% 70%,rgba(15,42,24,.8) 0%,transparent 55%),
+        radial-gradient(ellipse 80% 50% at 50% 110%,rgba(2,12,8,.95) 0%,transparent 60%),
+        linear-gradient(180deg,var(--void) 0%,var(--forest) 40%,var(--canopy) 70%,var(--void) 100%);
+    }
+    .mist-l{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 220% 35% at 50% 62%,rgba(28,74,45,.14) 0%,transparent 70%);animation:drift 16s ease-in-out infinite alternate}
+    .mist-l.b{opacity:.5;animation-duration:22s;animation-direction:alternate-reverse}
+    @keyframes drift{from{transform:translateX(-4%) scaleY(.97)}to{transform:translateX(4%) scaleY(1.04)}}
+
+    /* Pond canvas */
+    #pondCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:1}
+    .hero-vignette{position:absolute;inset:0;z-index:2;background:radial-gradient(ellipse 70% 60% at 50% 50%,transparent 20%,rgba(2,12,8,.55) 80%),linear-gradient(180deg,rgba(2,12,8,.5) 0%,transparent 25%,transparent 70%,rgba(2,12,8,.8) 100%);pointer-events:none}
+
+    .hero-inner{position:relative;z-index:10;text-align:center;max-width:860px;padding:0 2rem}
+
+    .hero-eyebrow{font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.52em;text-transform:uppercase;color:var(--gold);margin-bottom:2rem;display:flex;align-items:center;justify-content:center;gap:1.2rem;opacity:0;animation:rise 1s ease .3s forwards}
+    .hero-eyebrow::before,.hero-eyebrow::after{content:'';width:40px;height:1px;background:var(--gold);opacity:.45}
+
+    .hero-script{font-family:'Great Vibes',cursive;font-size:clamp(5.5rem,16vw,16rem);line-height:.9;color:transparent;background:linear-gradient(155deg,var(--spark) 0%,var(--ember) 28%,var(--gold) 55%,var(--ember) 80%,var(--spark) 100%);background-size:250% 250%;-webkit-background-clip:text;background-clip:text;animation:rise 1.4s ease .6s forwards,goldflow 7s ease 2s infinite;opacity:0;filter:drop-shadow(0 0 40px rgba(201,168,76,.25))}
+    @keyframes goldflow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+
+    .hero-tagline{font-family:'Cormorant Garamond',serif;font-size:clamp(1.1rem,2.4vw,1.85rem);font-style:italic;font-weight:300;color:var(--cream);line-height:1.5;margin:1.4rem auto 0;max-width:580px;min-height:2.5em;opacity:0;animation:rise .8s ease 1.4s forwards}
+    .tw{border-right:2px solid var(--gold);padding-right:3px}
+    .tw.done{border-right-color:transparent}
+
+    .hero-body{font-size:.95rem;font-weight:300;color:var(--mist);max-width:440px;margin:1.2rem auto 3rem;line-height:1.8;opacity:0;animation:rise .8s ease 1.8s forwards}
+
+    .hero-btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;opacity:0;animation:rise .8s ease 2.1s forwards}
+
+    /* Big central browse button */
+    .btn-browse{
+      font-family:'Cinzel',serif;font-size:.75rem;letter-spacing:.25em;text-transform:uppercase;
+      color:var(--void);padding:1.2rem 3.5rem;cursor:none;text-decoration:none;display:inline-block;
+      background:linear-gradient(135deg,var(--gold) 0%,var(--ember) 50%,var(--gold) 100%);
+      background-size:220% 100%;border:none;
+      box-shadow:0 6px 30px rgba(201,168,76,.35),0 0 60px rgba(201,168,76,.1);
+      transition:background-position .5s,transform .25s,box-shadow .3s;
+      position:relative;
+    }
+    .btn-browse::before{
+      content:'';position:absolute;inset:-1px;
+      background:linear-gradient(135deg,var(--spark),var(--gold),var(--ember));
+      opacity:0;transition:opacity .3s;z-index:-1;
+    }
+    .btn-browse:hover{background-position:100% 0;transform:translateY(-3px);box-shadow:0 12px 40px rgba(201,168,76,.5),0 0 80px rgba(201,168,76,.15)}
+
+    .btn-ghost{font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ember);padding:1.1rem 2.2rem;cursor:none;text-decoration:none;display:inline-block;background:transparent;border:1px solid rgba(201,168,76,.32);transition:border-color .3s,background .3s,transform .25s}
+    .btn-ghost:hover{border-color:var(--gold);background:rgba(201,168,76,.06);transform:translateY(-3px)}
+    .btn-gold{font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--void);padding:1.05rem 2.2rem;cursor:none;text-decoration:none;display:inline-block;background:linear-gradient(135deg,var(--gold) 0%,var(--ember) 50%,var(--gold) 100%);background-size:220% 100%;border:none;box-shadow:0 4px 24px rgba(201,168,76,.28);transition:background-position .5s,transform .25s,box-shadow .3s}
+    .btn-gold:hover{background-position:100% 0;transform:translateY(-3px);box-shadow:0 10px 36px rgba(201,168,76,.45)}
+
+    .scroll-hint{position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);font-family:'Cinzel',serif;font-size:.48rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(201,168,76,.35);display:flex;flex-direction:column;align-items:center;gap:.6rem;opacity:0;animation:rise .8s ease 2.8s forwards;z-index:10}
+    .scroll-line{width:1px;height:48px;background:linear-gradient(180deg,var(--gold),transparent);animation:scroll-pulse 2.2s ease-in-out infinite}
+    @keyframes scroll-pulse{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform:scaleY(1);transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+    @keyframes rise{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+
+    /* ── TICKER ── */
+    .ticker{background:rgba(2,12,8,.94);border-top:1px solid rgba(201,168,76,.1);border-bottom:1px solid rgba(201,168,76,.1);padding:.9rem 0;overflow:hidden}
+    .ticker-track{display:flex;animation:ticker-scroll 28s linear infinite;white-space:nowrap;width:max-content}
+    .ticker:hover .ticker-track{animation-play-state:paused}
+    .tick{font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-style:italic;color:var(--mist);padding:0 2.5rem;border-right:1px solid rgba(201,168,76,.1)}
+    .tick .gem{color:var(--gold);margin-right:.4rem}
+    @keyframes ticker-scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+    /* ── SECTIONS ── */
+    .eyebrow{font-family:'Cinzel',serif;font-size:.56rem;letter-spacing:.48em;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:1.2rem}
+    .sec-title{font-family:'Great Vibes',cursive;font-size:clamp(2.8rem,6vw,6rem);color:var(--ivory);line-height:1.1;margin-bottom:2rem;text-shadow:0 2px 40px rgba(201,168,76,.15)}
+    .sec-body{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-style:italic;font-weight:300;color:var(--mist);line-height:1.95}
+
+    /* ── WHAT IS FAIRIES ── */
+    .what{padding:9rem 3rem;background:var(--forest);position:relative;overflow:hidden;text-align:center}
+    .what::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 50% 40%,rgba(38,96,64,.12) 0%,transparent 65%)}
+    .what .sec-body{max-width:660px;margin:0 auto}
+
+    /* ── HOW IT WORKS ── */
+    .ritual{padding:9rem 3rem;background:var(--void);position:relative;overflow:hidden}
+    .ritual::before{content:'';position:absolute;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(38,96,64,.1) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none}
+    .ritual-wrap{text-align:center;position:relative;z-index:1}
+    .ritual-steps{display:grid;grid-template-columns:repeat(4,1fr);max-width:1100px;margin:5rem auto 0;position:relative;z-index:1}
+    .ritual-steps::before{content:'';position:absolute;top:1.2rem;left:12%;right:12%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),var(--gold),transparent);opacity:.18}
+    .rstep{text-align:center;padding:0 1.5rem 2.5rem;position:relative}
+    .rstep-dot{width:14px;height:14px;border-radius:50%;background:var(--void);border:1px solid var(--gold);margin:0 auto 2.5rem;position:relative;transition:background .4s,box-shadow .4s}
+    .rstep:hover .rstep-dot{background:var(--gold);box-shadow:0 0 0 4px rgba(201,168,76,.15),0 0 20px rgba(201,168,76,.4)}
+    .rstep-num{position:absolute;top:-1.8rem;left:50%;transform:translateX(-50%);font-family:'Cinzel',serif;font-size:.48rem;letter-spacing:.15em;color:rgba(201,168,76,.4);white-space:nowrap}
+    .rstep-title{font-family:'Great Vibes',cursive;font-size:2rem;color:var(--ivory);margin-bottom:1rem}
+    .rstep-desc{font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;font-weight:300;color:var(--mist);line-height:1.8}
+
+    /* ── DIPTYCH ── */
+    .diptych{display:grid;grid-template-columns:1fr 1fr}
+    .dip-side{padding:7rem 5rem;position:relative;overflow:hidden}
+    .dip-side.renters{background:linear-gradient(135deg,var(--void) 0%,var(--forest) 100%);border-right:1px solid rgba(201,168,76,.15)}
+    .dip-side.lenders{background:linear-gradient(135deg,var(--canopy) 0%,var(--moss) 100%)}
+    .dip-num{position:absolute;bottom:-1.5rem;right:1.5rem;font-family:'Great Vibes',cursive;font-size:14rem;color:rgba(201,168,76,.025);pointer-events:none;user-select:none;line-height:1}
+    .dip-tag{font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:.35em;text-transform:uppercase;color:var(--gold);margin-bottom:2rem;display:block}
+    .dip-title{font-family:'Great Vibes',cursive;font-size:clamp(2rem,3.5vw,3.5rem);color:var(--ivory);line-height:1.15;margin-bottom:1.5rem}
+    .dip-body{font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-style:italic;font-weight:300;color:var(--mist);line-height:1.9;max-width:400px;margin-bottom:2.8rem}
+
+    /* ── PROMISE ── */
+    .promise{padding:9rem 3rem;background:var(--void);text-align:center;position:relative;overflow:hidden}
+    .promise::before{content:'Fairies';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Great Vibes',cursive;font-size:30rem;color:rgba(201,168,76,.018);pointer-events:none;user-select:none;white-space:nowrap}
+    .promise-grid{display:flex;gap:2.5rem;justify-content:center;flex-wrap:wrap;max-width:1000px;margin:5rem auto 0;position:relative;z-index:1}
+    .pcard{flex:1;min-width:195px;max-width:215px;padding:2.5rem 1.5rem;border-top:1px solid rgba(201,168,76,.15);transition:border-top-color .4s,transform .3s}
+    .pcard:hover{border-top-color:var(--gold);transform:translateY(-4px)}
+    .pcard-icon{font-size:1.3rem;display:block;margin-bottom:1.2rem;color:var(--gold)}
+    .pcard-title{font-family:'Great Vibes',cursive;font-size:1.7rem;color:var(--ivory);margin-bottom:.7rem}
+    .pcard-text{font-family:'Cormorant Garamond',serif;font-size:.95rem;font-style:italic;font-weight:300;color:var(--mist);line-height:1.75}
+
+    /* ── MESSAGE SECTION ── */
+    .message-section{
+      padding:9rem 3rem;
+      background:var(--forest);
+      position:relative;overflow:hidden;
+    }
+    .message-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(38,96,64,.08) 0%,transparent 70%)}
+    .message-wrap{max-width:680px;margin:0 auto;position:relative;z-index:1}
+    .message-intro{text-align:center;margin-bottom:4rem}
+
+    .g-rule{display:flex;align-items:center;gap:1rem;margin:2.5rem 0}
+    .g-rule-line{flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,.3),transparent)}
+    .g-rule-gem{width:6px;height:6px;background:var(--gold);transform:rotate(45deg);flex-shrink:0}
+
+    .msg-row{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-bottom:2rem}
+    .msg-row.single{grid-template-columns:1fr}
+    .msg-group{display:flex;flex-direction:column;gap:.6rem}
+    .msg-label{font-family:'Cinzel',serif;font-size:.56rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold)}
+    .msg-input,.msg-select,.msg-textarea{background:transparent;border:none;border-bottom:1px solid rgba(201,168,76,.2);padding:.8rem 0;color:var(--ivory);font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-style:italic;outline:none;transition:border-color .3s;width:100%}
+    .msg-input:focus,.msg-select:focus,.msg-textarea:focus{border-bottom-color:var(--gold)}
+    .msg-input::placeholder,.msg-textarea::placeholder{color:var(--ghost);font-style:italic}
+    .msg-select{-webkit-appearance:none;cursor:none}
+    .msg-select option{background:var(--canopy);color:var(--ivory)}
+    .msg-textarea{resize:vertical;min-height:120px;border:1px solid rgba(201,168,76,.2);padding:.8rem;margin-top:.2rem}
+    .msg-textarea:focus{border-color:var(--gold)}
+    .msg-submit{font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.22em;text-transform:uppercase;color:var(--void);background:linear-gradient(135deg,var(--gold) 0%,var(--ember) 50%,var(--gold) 100%);background-size:220% 100%;border:none;padding:1.1rem 3rem;cursor:none;box-shadow:0 4px 24px rgba(201,168,76,.28);transition:background-position .5s,transform .25s,box-shadow .3s;display:block;margin:2.5rem auto 0}
+    .msg-submit:hover{background-position:100% 0;transform:translateY(-3px);box-shadow:0 10px 36px rgba(201,168,76,.45)}
+    .msg-note{font-family:'Cormorant Garamond',serif;font-size:.9rem;font-style:italic;color:var(--ghost);margin-top:1rem;line-height:1.6;text-align:center}
+    .msg-success{display:none;text-align:center;padding:3rem 2rem;border:1px solid rgba(201,168,76,.2);background:rgba(201,168,76,.03);margin-top:2rem}
+    .msg-success.show{display:block}
+    .msg-success-title{font-family:'Great Vibes',cursive;font-size:3rem;color:var(--ember);margin-bottom:.8rem}
+    .msg-success-sub{font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--mist);line-height:1.7}
+
+    /* ── ABOUT ── */
+    .about{padding:9rem 3rem;background:var(--void);position:relative;overflow:hidden}
+    .about::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 30% 50%,rgba(38,96,64,.1) 0%,transparent 65%)}
+    .about-inner{max-width:760px;margin:0 auto;position:relative;z-index:1}
+    .about-body{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-style:italic;font-weight:300;color:var(--mist);line-height:2;margin-bottom:1.5rem}
+
+    /* ── PAYMENT SECTION ── */
+    .payment-section{
+      padding:7rem 3rem;
+      background:var(--canopy);
+      border-top:1px solid rgba(201,168,76,.1);
+      position:relative;overflow:hidden;
+      text-align:center;
+    }
+    .payment-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 50%,rgba(201,168,76,.05) 0%,transparent 70%)}
+    .payment-cards{display:flex;gap:2rem;justify-content:center;flex-wrap:wrap;max-width:900px;margin:4rem auto 0;position:relative;z-index:1}
+    .payment-card{flex:1;min-width:220px;max-width:260px;background:rgba(3,13,7,.6);border:1px solid rgba(201,168,76,.15);padding:2.5rem 2rem;transition:border-color .4s,transform .3s}
+    .payment-card:hover{border-color:rgba(201,168,76,.4);transform:translateY(-4px)}
+    .payment-icon{font-size:2rem;display:block;margin-bottom:1.2rem}
+    .payment-title{font-family:'Cinzel',serif;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ivory);margin-bottom:.8rem}
+    .payment-desc{font-family:'Cormorant Garamond',serif;font-size:.98rem;font-style:italic;color:var(--mist);line-height:1.7}
+    .payment-tag{font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-top:.8rem;display:block}
+
+    /* Stripe button placeholder */
+    .stripe-btn{
+      font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;
+      color:var(--void);background:var(--gold);border:none;
+      padding:1rem 2.5rem;cursor:none;margin-top:3rem;display:inline-block;
+      transition:background .3s,transform .2s;position:relative;z-index:1;
+    }
+    .stripe-btn:hover{background:var(--spark);transform:translateY(-2px)}
+    .stripe-coming{font-family:'Cormorant Garamond',serif;font-size:.9rem;font-style:italic;color:var(--ghost);margin-top:1rem;display:block;position:relative;z-index:1}
+
+    /* ── FINAL CTA ── */
+    .final{padding:11rem 3rem;background:linear-gradient(180deg,var(--void) 0%,var(--forest) 45%,var(--void) 100%);text-align:center;position:relative;overflow:hidden}
+    .final-title{font-family:'Great Vibes',cursive;font-size:clamp(3.5rem,10vw,11rem);color:transparent;background:linear-gradient(155deg,var(--spark) 0%,var(--ember) 38%,var(--gold) 68%,var(--ember) 100%);-webkit-background-clip:text;background-clip:text;background-size:200% 200%;animation:goldflow 7s ease infinite;line-height:1.05;margin-bottom:1.5rem}
+    .final-sub{font-family:'Cormorant Garamond',serif;font-size:1.35rem;font-style:italic;font-weight:300;color:var(--mist);max-width:480px;margin:0 auto 3.5rem;line-height:1.75}
+
+    /* ── FOOTER ── */
+    footer{background:rgba(1,6,3,1);border-top:1px solid rgba(201,168,76,.12)}
+    .foot-top{display:grid;grid-template-columns:2fr 1fr 1fr;gap:5rem;padding:5rem 4rem;border-bottom:1px solid rgba(201,168,76,.08)}
+    .foot-logo{font-family:'Great Vibes',cursive;font-size:2.8rem;color:var(--ember);margin-bottom:.8rem;text-shadow:0 0 20px rgba(201,168,76,.2)}
+    .foot-tagline{font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--ghost);line-height:1.7;margin-bottom:1.8rem}
+    .foot-socials{display:flex;gap:.8rem;align-items:center}
+    .social-icon{width:22px;height:22px;display:flex;align-items:center;justify-content:center;text-decoration:none;transition:opacity .3s,transform .2s;opacity:.65}
+    .social-icon svg{width:20px;height:20px;fill:var(--gold)}
+    .social-icon:hover{opacity:1;transform:translateY(-2px)}
+    .foot-col-title{font-family:'Cinzel',serif;font-size:.56rem;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin-bottom:1.5rem}
+    .foot-links{list-style:none;display:flex;flex-direction:column;gap:.9rem}
+    .foot-links a{font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--mist);text-decoration:none;transition:color .3s}
+    .foot-links a:hover{color:var(--ember)}
+    .foot-bottom{padding:2rem 4rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+    .foot-copy{font-family:'Cormorant Garamond',serif;font-size:.85rem;font-style:italic;color:rgba(138,171,146,.3)}
+
+    .rv{opacity:0;transform:translateY(38px);transition:opacity .95s ease,transform .95s ease}
+    .rv.in{opacity:1;transform:translateY(0)}
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:900px){
+      .ritual-steps{grid-template-columns:1fr 1fr}
+      .ritual-steps::before{display:none}
+      .diptych{grid-template-columns:1fr}
+      .dip-side{padding:5rem 2.5rem}
+      .foot-top{grid-template-columns:1fr 1fr;gap:3rem;padding:4rem 2rem}
+      .foot-brand{grid-column:1/-1}
+      .foot-bottom{padding:1.5rem 2rem;flex-direction:column;align-items:flex-start}
+      .about-inner{max-width:100%}
+    }
+    @media(max-width:600px){
+      .ritual-steps{grid-template-columns:1fr}
+      .promise-grid{flex-direction:column;align-items:center}
+      .msg-row{grid-template-columns:1fr}
+      .final{padding:7rem 1.5rem}
+      .foot-top{grid-template-columns:1fr;padding:3rem 1.5rem}
+      .about,.message-section,.payment-section,.what,.ritual,.promise{padding:6rem 1.5rem}
+      .dip-side{padding:4rem 1.5rem}
+    }
+  </style>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-VPM2FPG2DW"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-VPM2FPG2DW');
+  </script>
+</head>
+<body>
+
+<!-- FAIRY CURSOR -->
+<canvas id="cursorTrail"></canvas>
+<div id="fairyCursor">
+  <svg viewBox="0 0 40 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Wings -->
+    <ellipse cx="12" cy="22" rx="10" ry="6" fill="rgba(201,168,76,0.35)" stroke="rgba(245,225,153,0.6)" stroke-width=".8" transform="rotate(-20 12 22)"/>
+    <ellipse cx="28" cy="22" rx="10" ry="6" fill="rgba(201,168,76,0.35)" stroke="rgba(245,225,153,0.6)" stroke-width=".8" transform="rotate(20 28 22)"/>
+    <ellipse cx="11" cy="26" rx="6" ry="4" fill="rgba(201,168,76,0.2)" stroke="rgba(245,225,153,0.4)" stroke-width=".6" transform="rotate(-15 11 26)"/>
+    <ellipse cx="29" cy="26" rx="6" ry="4" fill="rgba(201,168,76,0.2)" stroke="rgba(245,225,153,0.4)" stroke-width=".6" transform="rotate(15 29 26)"/>
+    <!-- Body -->
+    <ellipse cx="20" cy="26" rx="3.5" ry="7" fill="rgba(201,168,76,0.8)"/>
+    <!-- Head -->
+    <circle cx="20" cy="17" r="4.5" fill="rgba(201,168,76,0.85)"/>
+    <!-- Glow center -->
+    <circle cx="20" cy="22" r="3" fill="rgba(245,225,153,0.6)"/>
+    <!-- Wand -->
+    <line x1="24" y1="16" x2="32" y2="8" stroke="rgba(245,225,153,0.8)" stroke-width="1.2" stroke-linecap="round"/>
+    <circle cx="32" cy="8" r="2.5" fill="rgba(245,225,153,0.9)"/>
+    <line x1="30" y1="6" x2="34" y2="10" stroke="rgba(245,225,153,0.7)" stroke-width=".8"/>
+    <line x1="34" y1="6" x2="30" y2="10" stroke="rgba(245,225,153,0.7)" stroke-width=".8"/>
+  </svg>
+</div>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="index.html" class="logo-wrap">
+    <img src="logo_icon.png" class="nav-logo-icon" alt="Fairies" onerror="this.style.display='none'"/>
+    <span class="nav-logo-text">Fairies</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="wardrobe.html">Browse</a></li>
+    <li><a href="#how">How It Works</a></li>
+    <li><a href="#message">Message Us</a></li>
+    <li><a href="#about">About</a></li>
+  </ul>
+  <a href="list.html" class="nav-pill">Get Started</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <canvas id="pondCanvas"></canvas>
+  <div class="hero-vignette"></div>
+  <div class="hero-inner">
+    <p class="hero-eyebrow">Greater Boston · Dress Lending</p>
+    <h1 class="hero-script">Fairies</h1>
+    <p class="hero-tagline"><span class="tw" id="tw"></span></p>
+    <p class="hero-body">Rent stunning pieces from real wardrobes near you. We collect, deliver, and handle everything — so you just show up glowing.</p>
+    <div class="hero-btns">
+      <a href="wardrobe.html" class="btn-browse">Browse the Wardrobe ✦</a>
+    </div>
+    <div style="margin-top:1.2rem;opacity:0;animation:rise .8s ease 2.4s forwards;display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+      <a href="list.html#lend" class="btn-ghost">List a Piece</a>
+      <a href="list.html#rent" class="btn-ghost">Request a Piece</a>
+    </div>
+  </div>
+  <div class="scroll-hint"><div class="scroll-line"></div>Scroll</div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-track">
+    <span class="tick"><span class="gem">✦</span>Date Night</span>
+    <span class="tick"><span class="gem">✦</span>Graduation</span>
+    <span class="tick"><span class="gem">✦</span>Birthday</span>
+    <span class="tick"><span class="gem">✦</span>Wedding Guest</span>
+    <span class="tick"><span class="gem">✦</span>Prom</span>
+    <span class="tick"><span class="gem">✦</span>Girls' Night</span>
+    <span class="tick"><span class="gem">✦</span>Work Event</span>
+    <span class="tick"><span class="gem">✦</span>Baby Shower</span>
+    <span class="tick"><span class="gem">✦</span>Engagement Party</span>
+    <span class="tick"><span class="gem">✦</span>Christmas Party</span>
+    <span class="tick"><span class="gem">✦</span>Date Night</span>
+    <span class="tick"><span class="gem">✦</span>Graduation</span>
+    <span class="tick"><span class="gem">✦</span>Birthday</span>
+    <span class="tick"><span class="gem">✦</span>Wedding Guest</span>
+    <span class="tick"><span class="gem">✦</span>Prom</span>
+    <span class="tick"><span class="gem">✦</span>Girls' Night</span>
+    <span class="tick"><span class="gem">✦</span>Work Event</span>
+    <span class="tick"><span class="gem">✦</span>Baby Shower</span>
+    <span class="tick"><span class="gem">✦</span>Engagement Party</span>
+    <span class="tick"><span class="gem">✦</span>Christmas Party</span>
+  </div>
+</div>
+
+<!-- WHAT IS FAIRIES -->
+<section class="what rv">
+  <span class="eyebrow">✦ What Is Fairies ✦</span>
+  <h2 class="sec-title">Every occasion deserves the right dress.<br>Not the full price tag.</h2>
+  <p class="sec-body">Fairies is a peer-to-peer dress lending platform based in Boston. Real people share pieces from their wardrobes. Real people borrow them for their moments. We handle every pickup and delivery personally — door to door — so nobody has to figure out the logistics. You just find the dress and show up.</p>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="ritual" id="how">
+  <div class="ritual-wrap rv">
+    <span class="eyebrow">✦ The Ritual ✦</span>
+    <h2 class="sec-title">How Fairies Works</h2>
+    <p class="sec-body" style="max-width:460px;margin:0 auto">From the moment you find the one — to the moment it's at your door. All handled.</p>
+  </div>
+  <div class="ritual-steps">
+    <div class="rstep rv"><div class="rstep-dot"><span class="rstep-num">01</span></div><p class="rstep-title">Discover</p><p class="rstep-desc">Browse real pieces from real wardrobes nearby. Filter by occasion, size, and vibe.</p></div>
+    <div class="rstep rv" style="transition-delay:.12s"><div class="rstep-dot"><span class="rstep-num">02</span></div><p class="rstep-title">Reserve</p><p class="rstep-desc">Pick your dates and pay securely. Confirmed in minutes.</p></div>
+    <div class="rstep rv" style="transition-delay:.24s"><div class="rstep-dot"><span class="rstep-num">03</span></div><p class="rstep-title">Delivered</p><p class="rstep-desc">We collect from the lender and bring it straight to your door. Personally. Every time.</p></div>
+    <div class="rstep rv" style="transition-delay:.36s"><div class="rstep-dot"><span class="rstep-num">04</span></div><p class="rstep-title">Returned</p><p class="rstep-desc">We collect it after your event. No stress, no chasing. Just show up and shine.</p></div>
+  </div>
+</section>
+
+<!-- DIPTYCH -->
+<div class="diptych">
+  <div class="dip-side renters rv">
+    <div class="dip-num">I</div>
+    <span class="dip-tag">✦ For Renters</span>
+    <h3 class="dip-title">Find the dress for your moment</h3>
+    <p class="dip-body">Whatever the occasion — date night, graduation, your best friend's wedding — there's a piece waiting. Browse real wardrobes and we bring it to your door.</p>
+    <a href="wardrobe.html" class="btn-gold">Browse the Wardrobe</a>
+  </div>
+  <div class="dip-side lenders rv">
+    <div class="dip-num">II</div>
+    <span class="dip-tag">✦ For Lenders</span>
+    <h3 class="dip-title">Your wardrobe earns while it waits</h3>
+    <p class="dip-body">List the pieces sitting untouched. Earn a cut of every rental. We handle every logistic — pickup, delivery, and everything between.</p>
+    <a href="list.html#lend" class="btn-ghost">List Your Pieces</a>
+  </div>
+</div>
+
+<!-- PROMISE -->
+<section class="promise rv">
+  <span class="eyebrow">✦ Our Promise ✦</span>
+  <h2 class="sec-title">Built on trust.<br>Run with care.</h2>
+  <div class="promise-grid">
+    <div class="pcard rv"><span class="pcard-icon">🔒</span><p class="pcard-title">Discreet</p><p class="pcard-text">Your data, rentals and listings stay private. Always.</p></div>
+    <div class="pcard rv" style="transition-delay:.1s"><span class="pcard-icon">✦</span><p class="pcard-title">Delivered</p><p class="pcard-text">Personal pickup and dropoff. No third-party couriers. Ever.</p></div>
+    <div class="pcard rv" style="transition-delay:.2s"><span class="pcard-icon">💳</span><p class="pcard-title">Secure</p><p class="pcard-text">Every transaction protected from both sides.</p></div>
+    <div class="pcard rv" style="transition-delay:.3s"><span class="pcard-icon">🌿</span><p class="pcard-title">Conscious</p><p class="pcard-text">Every rental is a dress saved from waste. Beautiful and responsible.</p></div>
+  </div>
+</section>
+
+<!-- MESSAGE US -->
+<section class="message-section rv" id="message">
+  <div class="message-wrap">
+    <div class="message-intro">
+      <span class="eyebrow">✦ Get in Touch ✦</span>
+      <h2 class="sec-title">Message Fairies</h2>
+      <p class="sec-body" style="max-width:500px;margin:0 auto">Have a question about a piece, a booking, or anything else? Send us a message and we'll get back to you personally — usually within a few hours.</p>
+    </div>
+
+    <form id="msgForm" action="https://formspree.io/f/xbderygg" method="POST">
+      <input type="hidden" name="_subject" value="✦ New Message — Fairies"/>
+      <input type="hidden" name="form_type" value="message"/>
+
+      <div class="g-rule"><div class="g-rule-line"></div><div class="g-rule-gem"></div><div class="g-rule-line"></div></div>
+
+      <div class="msg-row">
+        <div class="msg-group">
+          <label class="msg-label">Your Name *</label>
+          <input type="text" name="name" class="msg-input" placeholder="Your name" required/>
+        </div>
+        <div class="msg-group">
+          <label class="msg-label">Your Email *</label>
+          <input type="email" name="email" class="msg-input" placeholder="your@email.com" required/>
+        </div>
+      </div>
+
+      <div class="msg-row">
+        <div class="msg-group">
+          <label class="msg-label">Your Phone</label>
+          <input type="tel" name="phone" class="msg-input" placeholder="(617) 000-0000"/>
+        </div>
+        <div class="msg-group">
+          <label class="msg-label">What's this about?</label>
+          <select name="subject" class="msg-select" required>
+            <option value="" disabled selected>Choose a topic</option>
+            <option>I want to rent a piece</option>
+            <option>I want to list a piece</option>
+            <option>Question about a listing</option>
+            <option>Delivery question</option>
+            <option>Payment question</option>
+            <option>Damage or issue</option>
+            <option>Something else</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="msg-row single">
+        <div class="msg-group">
+          <label class="msg-label">Your Message *</label>
+          <textarea name="message" class="msg-textarea" placeholder="Tell us what you need — we'll get back to you personally..." required></textarea>
+        </div>
+      </div>
+
+      <button type="submit" class="msg-submit">Send Message ✦</button>
+      <p class="msg-note">We respond personally to every message. Usually within a few hours.</p>
+    </form>
+
+    <div class="msg-success" id="msgSuccess">
+      <p class="msg-success-title">Message received ✦</p>
+      <p class="msg-success-sub">Thank you for reaching out. We'll get back to you personally within a few hours.<br>In the meantime — go find your perfect piece.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PAYMENT -->
+<section class="payment-section rv">
+  <span class="eyebrow">✦ Payments ✦</span>
+  <h2 class="sec-title">Safe. Simple. Secure.</h2>
+  <p class="sec-body" style="max-width:520px;margin:0 auto;position:relative;z-index:1">Every transaction on Fairies is handled securely. Renters pay before delivery. Lenders get paid after. Nobody loses.</p>
+  <div class="payment-cards">
+    <div class="payment-card rv">
+      <span class="payment-icon">💳</span>
+      <p class="payment-title">Secure Checkout</p>
+      <p class="payment-desc">Powered by Stripe — the same payment infrastructure used by Amazon, Shopify and Uber.</p>
+      <span class="payment-tag">✦ Live now</span>
+    </div>
+    <div class="payment-card rv" style="transition-delay:.1s">
+      <span class="payment-icon">🏦</span>
+      <p class="payment-title">Direct Payouts</p>
+      <p class="payment-desc">Lenders get paid directly to their bank account after each successful rental. No delays.</p>
+      <span class="payment-tag">✦ Live now</span>
+    </div>
+    <div class="payment-card rv" style="transition-delay:.2s">
+      <span class="payment-icon">🛡️</span>
+      <p class="payment-title">Damage Protection</p>
+      <p class="payment-desc">If anything happens to a piece, the renter is charged the full replacement value. Lenders are always protected.</p>
+      <span class="payment-tag">✦ Always active</span>
+    </div>
+  </div>
+  <a href="wardrobe.html" class="stripe-btn" onclick="haptic()">Browse & Pay Now ✦</a>
+</section>
+
+<!-- ABOUT -->
+<section class="about rv" id="about">
+  <div class="about-inner">
+    <span class="eyebrow">✦ About Fairies ✦</span>
+    <h2 class="sec-title">We started with a simple idea.</h2>
+    <p class="about-body">Every woman has a dress she wore once and never again. And every woman has had a moment — a graduation, a birthday, a date — where she wanted to look extraordinary but couldn't justify spending hundreds of dollars on something she'd wear for one night.</p>
+    <p class="about-body">Fairies was built to close that gap. Not with a warehouse or a subscription. With real people, real wardrobes, and a personal service that handles every single logistic so you never have to think about anything except showing up.</p>
+    <p class="about-body">We're based in Boston. We personally collect every piece from the lender's door and deliver it to the renter's door. We're building something that feels human in an industry that forgot to be.</p>
+    <p class="about-body" style="color:var(--ember)">Every occasion deserves the right dress. Not the full price tag.</p>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final">
+  <h2 class="final-title rv">Your moment<br>is waiting.</h2>
+  <p class="final-sub rv">Whatever the occasion — you deserve to look extraordinary without spending like it.</p>
+  <div class="rv" style="display:flex;gap:1.2rem;justify-content:center;flex-wrap:wrap">
+    <a href="wardrobe.html" class="btn-gold">Browse the Wardrobe</a>
+    <a href="list.html" class="btn-ghost">List Your Pieces</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-top">
+    <div class="foot-brand">
+      <div class="foot-logo">Fairies</div>
+      <p class="foot-tagline">Real wardrobes. Real magic.<br>Boston, MA.</p>
+      <div class="foot-socials">
+        <a href="https://www.instagram.com/wearfairies-" class="social-icon" aria-label="Instagram" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="none" stroke="#c9a84c" stroke-width="1.8"/><circle cx="12" cy="12" r="4" fill="none" stroke="#c9a84c" stroke-width="1.8"/><circle cx="17.5" cy="6.5" r=".9" fill="#c9a84c"/></svg>
+        </a>
+        <a href="https://www.tiktok.com/@wearfairiess" class="social-icon" aria-label="TikTok" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="#c9a84c"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.34 6.34 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V9.05a8.16 8.16 0 004.77 1.52V7.12a4.85 4.85 0 01-1-.43z"/></svg>
+        </a>
+        <a href="#" class="social-icon" aria-label="YouTube" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="#c9a84c"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+        </a>
+        <a href="https://www.facebook.com/wearfairies-facebook" class="social-icon" aria-label="Facebook" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="#c9a84c"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+        </a>
+      </div>
+    </div>
+    <div>
+      <p class="foot-col-title">Navigate</p>
+      <ul class="foot-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="wardrobe.html">Browse the Wardrobe</a></li>
+        <li><a href="list.html">List a Piece</a></li>
+        <li><a href="list.html#rent">Request a Piece</a></li>
+        <li><a href="#about">About Fairies</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="foot-col-title">Info</p>
+      <ul class="foot-links">
+        <li><a href="#how">How It Works</a></li>
+        <li><a href="terms.html#privacy">Privacy Policy</a></li>
+        <li><a href="terms.html">Terms of Service</a></li>
+        <li><a href="terms.html#damage">Damage Policy</a></li>
+        <li><a href="mailto:wearfairies@outlook.com">Contact Us</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot-bottom">
+    <p class="foot-copy">© 2026 Fairies Dress Lending · Boston, MA · All rights reserved</p>
+    <p class="foot-copy" style="opacity:.5">Made with love for every woman who deserves her moment.</p>
+  </div>
+</footer>
+
+<script>
+/* ── FAIRY CURSOR ── */
+const fairy = document.getElementById('fairyCursor');
+const trailCanvas = document.getElementById('cursorTrail');
+const tc = trailCanvas.getContext('2d');
+trailCanvas.width = window.innerWidth;
+trailCanvas.height = window.innerHeight;
+window.addEventListener('resize',()=>{trailCanvas.width=window.innerWidth;trailCanvas.height=window.innerHeight});
+
+let mx=0,my=0,fx=0,fy=0;
+const sparkles=[];
+
+document.addEventListener('mousemove',e=>{
+  mx=e.clientX;my=e.clientY;
+  fairy.style.left=mx+'px';
+  fairy.style.top=my+'px';
+  // Add sparkle on move
+  if(Math.random()<0.4){
+    sparkles.push({
+      x:mx+(Math.random()-0.5)*12,
+      y:my+(Math.random()-0.5)*12,
+      size:Math.random()*4+2,
+      alpha:0.9,
+      vx:(Math.random()-0.5)*1.5,
+      vy:-(Math.random()*1.5+0.5),
+      color:Math.random()<0.5?'201,168,76':'245,225,153'
+    });
+  }
+});
+
+function drawTrail(){
+  tc.clearRect(0,0,trailCanvas.width,trailCanvas.height);
+  for(let i=sparkles.length-1;i>=0;i--){
+    const s=sparkles[i];
+    s.x+=s.vx;s.y+=s.vy;s.alpha-=0.035;s.size*=0.96;
+    if(s.alpha<=0){sparkles.splice(i,1);continue}
+    // 4-point star sparkle
+    tc.save();
+    tc.globalAlpha=s.alpha;
+    tc.translate(s.x,s.y);
+    tc.fillStyle=`rgb(${s.color})`;
+    // Draw diamond shape
+    tc.beginPath();
+    tc.moveTo(0,-s.size);tc.lineTo(s.size*0.3,0);
+    tc.lineTo(0,s.size);tc.lineTo(-s.size*0.3,0);
+    tc.closePath();tc.fill();
+    // Horizontal
+    tc.beginPath();
+    tc.moveTo(-s.size,0);tc.lineTo(-s.size*0.3,-s.size*0.3);
+    tc.lineTo(0,-s.size*0.4);tc.lineTo(s.size*0.3,-s.size*0.3);
+    tc.lineTo(s.size,0);tc.lineTo(s.size*0.3,s.size*0.3);
+    tc.lineTo(0,s.size*0.4);tc.lineTo(-s.size*0.3,s.size*0.3);
+    tc.closePath();tc.fill();
+    tc.restore();
+  }
+  requestAnimationFrame(drawTrail);
+}
+drawTrail();
+
+// Wing flutter animation
+let wt=0;
+(function flutterFairy(){
+  wt+=0.12;
+  const scale = 1+Math.sin(wt)*0.08;
+  fairy.style.transform=`translate(-50%,-60%) scale(${scale},${1})`;
+  requestAnimationFrame(flutterFairy);
+})();
+
+function haptic(p=[10,50,10]){if(navigator.vibrate)navigator.vibrate(p)}
+document.querySelectorAll('a,button').forEach(el=>el.addEventListener('touchstart',()=>haptic([8]),{passive:true}));
+document.querySelectorAll('.btn-gold,.btn-ghost,.btn-browse,.nav-pill').forEach(el=>el.addEventListener('click',()=>haptic([15,30,15])));
+
+/* ── ENCHANTED POND CANVAS ── */
+const canvas=document.getElementById('pondCanvas');
+const ctx=canvas.getContext('2d');
+let W,H,mouse={x:-999,y:-999};
+function resize(){W=canvas.width=canvas.offsetWidth;H=canvas.height=canvas.offsetHeight}
+resize();window.addEventListener('resize',resize);
+canvas.addEventListener('mousemove',e=>{const r=canvas.getBoundingClientRect();mouse.x=e.clientX-r.left;mouse.y=e.clientY-r.top});
+canvas.addEventListener('click',e=>{const r=canvas.getBoundingClientRect();addRipple(e.clientX-r.left,e.clientY-r.top);haptic([5])});
+
+const ripples=[];
+function addRipple(x,y){ripples.push({x,y,r:0,max:Math.random()*120+80,alpha:0.55,speed:Math.random()*2+1.5})}
+setInterval(()=>addRipple(Math.random()*W,H*0.5+Math.random()*H*0.5),2400);
+
+class Firefly{
+  constructor(){this.reset(true)}
+  reset(init=false){
+    this.x=Math.random()*W;this.y=init?Math.random()*H:H+20;
+    this.vx=(Math.random()-0.5)*0.6;this.vy=-(Math.random()*0.8+0.2);
+    this.size=Math.random()*3+1.5;this.alpha=0;this.maxAlpha=Math.random()*0.85+0.4;
+    this.pulseSpeed=Math.random()*0.03+0.01;this.pulseOffset=Math.random()*Math.PI*2;
+    this.life=0;this.maxLife=Math.random()*400+200;
+    const cols=['201,168,76','225,192,100','180,210,80','220,200,60'];
+    this.color=cols[Math.floor(Math.random()*cols.length)];
+    this.trail=[];
+  }
+  update(t){
+    this.life++;if(this.life>this.maxLife){this.reset();return}
+    const dx=mouse.x-this.x,dy=mouse.y-this.y,dist=Math.sqrt(dx*dx+dy*dy);
+    if(dist<180){this.vx+=dx/dist*0.015;this.vy+=dy/dist*0.015}
+    this.vx+=Math.sin(t*0.001+this.pulseOffset)*0.02;this.vy+=Math.cos(t*0.0008+this.pulseOffset)*0.01;
+    this.vx*=0.98;this.vy*=0.98;this.x+=this.vx;this.y+=this.vy;
+    this.trail.push({x:this.x,y:this.y});if(this.trail.length>12)this.trail.shift();
+    const pulse=Math.sin(t*this.pulseSpeed+this.pulseOffset)*0.3+0.7;
+    if(this.life<60)this.alpha=Math.min(this.maxAlpha,this.alpha+0.02);
+    else if(this.life>this.maxLife-60)this.alpha=Math.max(0,this.alpha-0.02);
+    else this.alpha=this.maxAlpha*pulse;
+  }
+  draw(){
+    if(this.alpha<=0)return;
+    for(let i=0;i<this.trail.length-1;i++){
+      const a=(i/this.trail.length)*this.alpha*0.35;
+      ctx.beginPath();ctx.moveTo(this.trail[i].x,this.trail[i].y);ctx.lineTo(this.trail[i+1].x,this.trail[i+1].y);
+      ctx.strokeStyle=`rgba(${this.color},${a})`;ctx.lineWidth=this.size*0.4;ctx.stroke();
+    }
+    const grad=ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,this.size*5);
+    grad.addColorStop(0,`rgba(${this.color},${this.alpha})`);grad.addColorStop(0.4,`rgba(${this.color},${this.alpha*0.4})`);grad.addColorStop(1,`rgba(${this.color},0)`);
+    ctx.beginPath();ctx.arc(this.x,this.y,this.size*5,0,Math.PI*2);ctx.fillStyle=grad;ctx.fill();
+    ctx.beginPath();ctx.arc(this.x,this.y,this.size,0,Math.PI*2);ctx.fillStyle=`rgba(255,248,200,${this.alpha})`;ctx.fill();
+  }
+}
+
+class Leaf{
+  constructor(){this.reset(true)}
+  reset(init=false){
+    this.x=Math.random()*W;this.y=init?Math.random()*H*0.6:-30;
+    this.size=Math.random()*14+6;this.vx=(Math.random()-0.5)*0.8;this.vy=Math.random()*0.6+0.15;
+    this.rot=Math.random()*Math.PI*2;this.rotSpeed=(Math.random()-0.5)*0.025;
+    this.alpha=Math.random()*0.4+0.15;this.sway=Math.random()*Math.PI*2;this.swaySpeed=Math.random()*0.02+0.005;
+    const g=['22,74,42','28,96,55','15,55,30','35,110,65'];this.color=g[Math.floor(Math.random()*g.length)];
+  }
+  update(){this.sway+=this.swaySpeed;this.x+=this.vx+Math.sin(this.sway)*0.4;this.y+=this.vy;this.rot+=this.rotSpeed;if(this.y>H+40)this.reset()}
+  draw(){
+    ctx.save();ctx.translate(this.x,this.y);ctx.rotate(this.rot);ctx.globalAlpha=this.alpha;
+    ctx.beginPath();ctx.ellipse(0,0,this.size*0.45,this.size,0,0,Math.PI*2);ctx.fillStyle=`rgba(${this.color},0.8)`;ctx.fill();
+    ctx.restore();ctx.globalAlpha=1;
+  }
+}
+
+class LilyPad{
+  constructor(){this.x=Math.random()*W;this.y=H*0.55+Math.random()*H*0.45;this.r=Math.random()*30+15;this.rot=Math.random()*Math.PI*2;this.bobOffset=Math.random()*Math.PI*2;this.bobSpeed=Math.random()*0.008+0.003;this.alpha=Math.random()*0.35+0.12}
+  draw(t){
+    const bob=Math.sin(t*this.bobSpeed+this.bobOffset)*3;
+    ctx.save();ctx.translate(this.x,this.y+bob);ctx.rotate(this.rot);ctx.globalAlpha=this.alpha;
+    ctx.beginPath();ctx.arc(0,0,this.r,0.2,Math.PI*2-0.2);ctx.fillStyle='rgba(20,70,35,0.7)';ctx.fill();ctx.strokeStyle='rgba(40,120,60,0.4)';ctx.lineWidth=1;ctx.stroke();
+    ctx.restore();ctx.globalAlpha=1;
+  }
+}
+
+function drawScene(t){
+  ctx.clearRect(0,0,W,H);
+  const sky=ctx.createLinearGradient(0,0,0,H);
+  sky.addColorStop(0,'#010a05');sky.addColorStop(0.35,'#051510');sky.addColorStop(0.6,'#071a12');sky.addColorStop(1,'#020c08');
+  ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+
+  // Forest silhouette
+  const tg=ctx.createLinearGradient(0,0,0,H*0.7);tg.addColorStop(0,'rgba(5,25,12,0.95)');tg.addColorStop(1,'rgba(5,25,12,0)');
+  ctx.beginPath();ctx.moveTo(0,H);ctx.lineTo(0,H*0.3);ctx.bezierCurveTo(W*0.05,H*0.1,W*0.12,H*0.05,W*0.18,H*0.15);ctx.bezierCurveTo(W*0.22,H*0.22,W*0.28,H*0.3,W*0.32,H*0.55);ctx.lineTo(W*0.32,H);ctx.fillStyle=tg;ctx.fill();
+  ctx.beginPath();ctx.moveTo(W,H);ctx.lineTo(W,H*0.25);ctx.bezierCurveTo(W*0.95,H*0.08,W*0.88,H*0.04,W*0.82,H*0.12);ctx.bezierCurveTo(W*0.78,H*0.2,W*0.72,H*0.28,W*0.68,H*0.52);ctx.lineTo(W*0.68,H);ctx.fillStyle=tg;ctx.fill();
+
+  // Tree lights
+  for(let i=0;i<35;i++){
+    let lx,ly;
+    if(i<17){lx=W*0.02+(W*0.28)*(i/17)+Math.sin(t*0.0003+i)*8;ly=H*0.05+H*0.3*(i/17)+Math.cos(t*0.0004+i*1.3)*6}
+    else{lx=W*0.7+(W*0.28)*((i-17)/18)+Math.sin(t*0.0003+i)*8;ly=H*0.04+H*0.3*((i-17)/18)+Math.cos(t*0.0004+i*1.3)*6}
+    const pulse=Math.sin(t*0.002+i*0.7)*0.4+0.6;const size=(Math.random()*2+2)*pulse;
+    const grad=ctx.createRadialGradient(lx,ly,0,lx,ly,size*8);grad.addColorStop(0,`rgba(240,220,120,${0.7*pulse})`);grad.addColorStop(1,'rgba(200,180,60,0)');
+    ctx.beginPath();ctx.arc(lx,ly,size*8,0,Math.PI*2);ctx.fillStyle=grad;ctx.fill();
+    ctx.beginPath();ctx.arc(lx,ly,size*0.4,0,Math.PI*2);ctx.fillStyle=`rgba(255,248,180,${0.9*pulse})`;ctx.fill();
+  }
+
+  // Water
+  const wg=ctx.createLinearGradient(0,H*0.3,0,H);wg.addColorStop(0,'rgba(3,20,12,0)');wg.addColorStop(0.4,'rgba(4,24,14,0.7)');wg.addColorStop(1,'rgba(2,14,8,0.95)');ctx.fillStyle=wg;ctx.fillRect(0,0,W,H);
+
+  // Mist
+  for(let i=0;i<3;i++){
+    const mx2=W*0.5+Math.sin(t*0.0002+i*2)*W*0.15,my2=H*0.55+i*20;
+    const mg=ctx.createRadialGradient(mx2,my2,0,mx2,my2,W*0.45);mg.addColorStop(0,`rgba(20,60,35,${0.06+Math.sin(t*0.0004+i)*0.02})`);mg.addColorStop(1,'rgba(20,60,35,0)');
+    ctx.beginPath();ctx.ellipse(mx2,my2,W*0.45,H*0.12,0,0,Math.PI*2);ctx.fillStyle=mg;ctx.fill();
+  }
+
+  pads.forEach(p=>p.draw(t));
+  leaves.forEach(l=>{l.update();l.draw()});
+  for(let i=ripples.length-1;i>=0;i--){
+    const rp=ripples[i];rp.r+=rp.speed;rp.alpha-=0.008;
+    if(rp.alpha<=0){ripples.splice(i,1);continue}
+    ctx.beginPath();ctx.ellipse(rp.x,rp.y,rp.r,rp.r*0.35,0,0,Math.PI*2);ctx.strokeStyle=`rgba(150,200,160,${rp.alpha})`;ctx.lineWidth=1.2;ctx.stroke();
+  }
+  flies.forEach(f=>{f.update(t);f.draw()});
+}
+
+const flies=Array.from({length:45},()=>new Firefly());
+const leaves=Array.from({length:18},()=>new Leaf());
+const pads=Array.from({length:12},()=>new LilyPad());
+let t=0;
+(function loop(){t++;drawScene(t);requestAnimationFrame(loop)})();
+
+/* ── TYPEWRITER ── */
+const lines=['Every occasion deserves the right dress.','Not the full price tag.','Delivered to your door, collected after.','Real wardrobes. Real magic.'];
+let li=0,ci=0,del=false,tw=document.getElementById('tw');
+function type(){
+  const line=lines[li];
+  if(!del){tw.textContent=line.slice(0,ci+1);ci++;if(ci===line.length){tw.classList.add('done');setTimeout(()=>{del=true;tw.classList.remove('done');type()},2200);return}setTimeout(type,52+Math.random()*38)}
+  else{tw.textContent=line.slice(0,ci-1);ci--;if(ci===0){del=false;li=(li+1)%lines.length;setTimeout(type,420);return}setTimeout(type,24+Math.random()*16)}
+}
+setTimeout(type,2200);
+
+/* ── MESSAGE FORM ── */
+document.getElementById('msgForm').addEventListener('submit',function(e){
+  e.preventDefault();
+  const btn=this.querySelector('.msg-submit');btn.textContent='Sending...';btn.disabled=true;
+  fetch(this.action,{method:'POST',body:new FormData(this),headers:{'Accept':'application/json'}})
+    .then(()=>{this.style.display='none';document.getElementById('msgSuccess').classList.add('show');haptic([15,50,15,50,15])})
+    .catch(()=>{this.style.display='none';document.getElementById('msgSuccess').classList.add('show')});
+});
+
+/* ── NAV + SCROLL ── */
+let hm=[false,false,false,false];
+window.addEventListener('scroll',()=>{
+  document.getElementById('nav').classList.toggle('scrolled',window.scrollY>60);
+  const p=window.scrollY/(document.body.scrollHeight-window.innerHeight);
+  [.25,.5,.75,1].forEach((v,i)=>{if(!hm[i]&&p>=v){hm[i]=true;haptic([5])}});
+},{passive:true});
+
+/* ── REVEAL ── */
+const io=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.07});
+document.querySelectorAll('.rv').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>

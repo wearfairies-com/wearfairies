@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/png" href="logo_icon.png"/>
+  <title>Get Started — Fairies</title>
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Cinzel:wght@400;500;600&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-VPM2FPG2DW"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-VPM2FPG2DW');</script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--void:#020c08;--forest:#071410;--canopy:#0a1e12;--moss:#133220;--gold:#c9a84c;--ember:#e2c068;--spark:#f5e199;--ivory:#f2ead6;--cream:#e0d4b8;--mist:#8aab92;--ghost:#4a6e55}
+    html{scroll-behavior:smooth}
+    body{background:var(--void);color:var(--ivory);font-family:'DM Sans',sans-serif;overflow-x:hidden;cursor:none}
+    #cur{position:fixed;width:10px;height:10px;background:var(--ember);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);box-shadow:0 0 10px var(--gold),0 0 22px rgba(201,168,76,.45);transition:width .25s,height .25s}
+    #cur.big{width:18px;height:18px}
+    #cur-ring{position:fixed;width:38px;height:38px;border:1px solid rgba(201,168,76,.35);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%)}
+    body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23g)' opacity='0.06'/%3E%3C/svg%3E");pointer-events:none;z-index:8000;mix-blend-mode:screen;opacity:.45}
+    nav{position:fixed;top:0;left:0;right:0;z-index:700;display:flex;align-items:center;justify-content:space-between;padding:1.4rem 3rem;background:rgba(2,12,8,.97);backdrop-filter:blur(12px)}
+    .logo-wrap{display:flex;align-items:center;gap:.6rem;text-decoration:none}
+    .nav-logo-icon{height:46px;width:auto;filter:drop-shadow(0 0 8px rgba(201,168,76,.25));transition:filter .3s,transform .4s}
+    .logo-wrap:hover .nav-logo-icon{filter:drop-shadow(0 0 18px rgba(201,168,76,.6));transform:rotate(-4deg) scale(1.08)}
+    .nav-logo-text{font-family:'Great Vibes',cursive;font-size:2.2rem;color:var(--ember);text-shadow:0 0 30px rgba(201,168,76,.3);line-height:1}
+    .nav-links{display:flex;gap:2.5rem;list-style:none}
+    .nav-links a{font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.24em;text-transform:uppercase;color:var(--mist);text-decoration:none;transition:color .3s}
+    .nav-links a:hover{color:var(--ember)}
+    @media(max-width:800px){.nav-links{display:none};nav{padding:1.1rem 1.5rem}}
+    .page-header{padding:9rem 3rem 0;text-align:center;background:linear-gradient(180deg,var(--void) 0%,var(--forest) 100%);position:relative;overflow:hidden}
+    .page-header::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 30%,rgba(38,96,64,.18) 0%,transparent 60%)}
+    .page-eyebrow{font-family:'Cinzel',serif;font-size:.56rem;letter-spacing:.48em;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:1.2rem;position:relative;z-index:1}
+    .page-title{font-family:'Great Vibes',cursive;font-size:clamp(3rem,7vw,7rem);color:var(--ivory);line-height:1;margin-bottom:3rem;position:relative;z-index:1;text-shadow:0 2px 40px rgba(201,168,76,.15)}
+    .tabs{display:flex;justify-content:center;position:relative;z-index:1}
+    .tab-btn{font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.22em;text-transform:uppercase;padding:1rem 3rem;background:transparent;border:1px solid rgba(201,168,76,.2);color:var(--mist);cursor:none;transition:all .3s}
+    .tab-btn:first-child{border-right:none}
+    .tab-btn.active{background:var(--gold);color:var(--void);border-color:var(--gold)}
+    .tab-btn:hover:not(.active){background:rgba(201,168,76,.08);color:var(--ember)}
+    .form-section{padding:7rem 3rem 9rem;background:var(--forest);display:none}
+    .form-section.active{display:block}
+    .form-wrap{max-width:720px;margin:0 auto}
+    .form-intro{margin-bottom:4rem;text-align:center}
+    .form-title{font-family:'Great Vibes',cursive;font-size:clamp(2.5rem,5vw,4.5rem);color:var(--ember);margin-bottom:1rem;text-shadow:0 2px 30px rgba(201,168,76,.2)}
+    .form-sub{font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-style:italic;color:var(--mist);line-height:1.8;max-width:520px;margin:0 auto}
+    .g-rule{display:flex;align-items:center;gap:1rem;margin:2.5rem 0}
+    .g-rule-line{flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,.3),transparent)}
+    .g-rule-gem{width:6px;height:6px;background:var(--gold);transform:rotate(45deg);flex-shrink:0}
+    .form-section-label{font-family:'Cinzel',serif;font-size:.56rem;letter-spacing:.4em;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:2rem;text-align:center}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-bottom:2rem}
+    .form-row.single{grid-template-columns:1fr}
+    .form-row.thirds{grid-template-columns:2fr 1fr 1fr}
+    .form-group{display:flex;flex-direction:column;gap:.6rem}
+    .form-label{font-family:'Cinzel',serif;font-size:.56rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold)}
+    .req{color:var(--ember);margin-left:.2rem}
+    .form-input,.form-select,.form-textarea{background:transparent;border:none;border-bottom:1px solid rgba(201,168,76,.2);padding:.8rem 0;color:var(--ivory);font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-style:italic;outline:none;transition:border-color .3s;width:100%}
+    .form-input:focus,.form-select:focus,.form-textarea:focus{border-bottom-color:var(--gold)}
+    .form-input::placeholder,.form-textarea::placeholder{color:var(--ghost);font-style:italic}
+    .form-select{-webkit-appearance:none;cursor:none}
+    .form-select option{background:var(--canopy);color:var(--ivory)}
+    .form-textarea{resize:vertical;min-height:100px;border:1px solid rgba(201,168,76,.2);padding:.8rem;margin-top:.2rem}
+    .form-textarea:focus{border-color:var(--gold)}
+    .address-block{background:rgba(201,168,76,.03);border:1px solid rgba(201,168,76,.12);padding:2rem 2.5rem;margin-bottom:2rem;position:relative}
+    .address-block::before{content:'✦';position:absolute;top:-.7rem;left:50%;transform:translateX(-50%);background:var(--forest);padding:0 .8rem;font-size:.7rem;color:var(--gold)}
+    .address-title{font-family:'Cinzel',serif;font-size:.56rem;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:1.5rem;display:block}
+    .photo-upload-area{position:relative;border:1px dashed rgba(201,168,76,.3);padding:3rem 2rem;text-align:center;background:rgba(201,168,76,.02);transition:background .3s,border-color .3s;margin-bottom:1.5rem}
+    .photo-upload-area:hover{background:rgba(201,168,76,.07);border-color:rgba(201,168,76,.6)}
+    .upload-glyph{font-size:2rem;color:var(--gold);display:block;margin-bottom:1rem}
+    .upload-main{font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-style:italic;color:var(--mist);margin-bottom:.4rem}
+    .upload-sub{font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.15em;text-transform:uppercase;color:var(--ghost)}
+    .photo-previews{display:flex;gap:.8rem;flex-wrap:wrap;margin-bottom:1rem}
+    .preview-wrap{position:relative;width:100px;height:100px;flex-shrink:0}
+    .preview-wrap img{width:100%;height:100%;object-fit:cover;display:block;border:1px solid rgba(201,168,76,.2)}
+    .preview-remove{position:absolute;top:-6px;right:-6px;width:20px;height:20px;background:var(--gold);color:var(--void);border:none;border-radius:50%;font-size:.7rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+    .photo-count{font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);text-align:center;margin-bottom:1rem}
+    .date-summary{font-family:'Cormorant Garamond',serif;font-size:.98rem;font-style:italic;color:var(--mist);padding:.6rem 0;border-bottom:1px solid rgba(201,168,76,.1);min-height:2rem}
+    .tip-options{display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap;margin-bottom:.5rem}
+    .tip-btn{font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);background:transparent;border:1px solid rgba(201,168,76,.25);padding:.7rem 1.8rem;cursor:none;transition:all .25s}
+    .tip-btn:hover{background:rgba(201,168,76,.08);border-color:var(--gold)}
+    .tip-btn.selected{background:var(--gold);color:var(--void);border-color:var(--gold)}
+    .submit-btn{font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.22em;text-transform:uppercase;color:var(--void);background:linear-gradient(135deg,var(--gold) 0%,var(--ember) 50%,var(--gold) 100%);background-size:220% 100%;border:none;padding:1.1rem 3rem;cursor:none;box-shadow:0 4px 24px rgba(201,168,76,.28);transition:background-position .5s,transform .25s,box-shadow .3s;display:block;margin:3rem auto 0}
+    .submit-btn:hover{background-position:100% 0;transform:translateY(-3px);box-shadow:0 10px 36px rgba(201,168,76,.45)}
+    .form-note{font-family:'Cormorant Garamond',serif;font-size:.9rem;font-style:italic;color:var(--ghost);margin-top:1.2rem;line-height:1.6;text-align:center}
+    .success-msg{display:none;text-align:center;padding:4rem 2rem;border:1px solid rgba(201,168,76,.2);background:rgba(201,168,76,.03);margin-top:3rem}
+    .success-msg.show{display:block}
+    .success-title{font-family:'Great Vibes',cursive;font-size:3.5rem;color:var(--ember);margin-bottom:1rem}
+    .success-sub{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-style:italic;color:var(--mist);line-height:1.7}
+    footer{background:rgba(1,6,3,1);border-top:1px solid rgba(201,168,76,.12);padding:2.8rem 4rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1.5rem}
+    .foot-logo{font-family:'Great Vibes',cursive;font-size:2rem;color:var(--ember)}
+    .foot-links{display:flex;gap:2rem;list-style:none}
+    .foot-links a{font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mist);text-decoration:none;transition:color .3s}
+    .foot-links a:hover{color:var(--ember)}
+    .foot-copy{font-family:'Cormorant Garamond',serif;font-size:.85rem;font-style:italic;color:rgba(138,171,146,.28)}
+    @media(max-width:700px){.form-row,.form-row.thirds{grid-template-columns:1fr}.form-section{padding:5rem 1.5rem 7rem}.tabs{flex-direction:column;align-items:center}.tab-btn:first-child{border-right:1px solid rgba(201,168,76,.2);border-bottom:none}footer{flex-direction:column;align-items:flex-start}}
+  </style>
+</head>
+<body>
+
+<div id="cur"></div>
+<div id="cur-ring"></div>
+
+<nav>
+  <a href="index.html" class="logo-wrap">
+    <img src="logo_icon.png" class="nav-logo-icon" alt="Fairies" onerror="this.style.display='none'"/>
+    <span class="nav-logo-text">Fairies</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="wardrobe.html">Browse</a></li>
+    <li><a href="index.html">Home</a></li>
+  </ul>
+</nav>
+
+<script>
+  // Check if trying to list - require login
+  window.addEventListener('load', function() {
+    var params = new URLSearchParams(window.location.search);
+    if(params.get('mode') === 'lender') {
+      // Check if user is logged in (check for session storage)
+      if(!sessionStorage.getItem('fairies_user')) {
+        // Redirect to auth
+        window.location.href = 'auth.html?redirect=list.html?mode=lender';
+      }
+    }
+  });
+</script>
+
+<div class="page-header">
+  <span class="page-eyebrow">✦ Join the Circle ✦</span>
+  <h1 class="page-title">Get Started</h1>
+  <div class="tabs">
+    <button class="tab-btn active" id="tab-lend" onclick="switchTab('lend')">I want to list a piece</button>
+    <button class="tab-btn" id="tab-rent" onclick="switchTab('rent')">I want to rent a piece</button>
+  </div>
+</div>
+
+<!-- LENDER FORM -->
+<section class="form-section active" id="lend">
+  <div class="form-wrap">
+    <div class="form-intro">
+      <h2 class="form-title">List Your Piece</h2>
+      <p class="form-sub">Fill in the details. Your listing goes to Fairies for approval — once approved it appears live on the wardrobe. You earn 60% of every rental.</p>
+    </div>
+
+    <form id="lendForm">
+      <div class="g-rule"><div class="g-rule-line"></div><div class="g-rule-gem"></div><div class="g-rule-line"></div></div>
+      <span class="form-section-label">Your Details</span>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">First Name <span class="req">*</span></label><input type="text" id="l_first" class="form-input" placeholder="First name" required/></div>
+        <div class="form-group"><label class="form-label">Last Name <span class="req">*</span></label><input type="text" id="l_last" class="form-input" placeholder="Last name" required/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Email <span class="req">*</span></label><input type="email" id="l_email" class="form-input" placeholder="your@email.com" required/></div>
+        <div class="form-group"><label class="form-label">Phone <span class="req">*</span></label><input type="tel" id="l_phone" class="form-input" placeholder="(617) 000-0000" required/></div>
+      </div>
+
+      <div class="g-rule"><div class="g-rule-line"></div><div class="g-rule-gem"></div><div class="g-rule-line"></div></div>
+      <span class="form-section-label">Pickup Address</span>
+      <div class="address-block">
+        <span class="address-title">✦ Where should we collect from?</span>
+        <div class="form-row single"><div class="form-group"><label class="form-label">Street Address <span class="req">*</span></label><input type="text" id="l_street" class="form-input" placeholder="e.g. 123 Newbury Street" required/></div></div>
+        <div class="form-row single"><div class="form-group"><label class="form-label">Apt / Unit</label><input type="text" id="l_apt" class="form-input" placeholder="Apt 2B (if applicable)"/></div></div>
+        <div class="form-row thirds">
+          <div class="form-group"><label class="form-label">City <span class="req">*</span></label><input type="text" id="l_city" class="form-input" placeholder="Boston" required/></div>
+          <div class="form-group"><label class="form-label">State <span class="req">*</span></label><input type="text" id="l_state" class="form-input" placeholder="MA" required/></div>
+          <div class="form-group"><label class="form-label">ZIP <span class="req">*</span></label><input type="text" id="l_zip" class="form-input" placeholder="02101" required/></div>
+        </div>
+        <div class="form-row single"><div class="form-group"><label class="form-label">Collection Instructions</label><input type="text" id="l_notes" class="form-input" placeholder="e.g. Ring doorbell, buzz #3B"/></div></div>
+      </div>
+
+      <div class="g-rule"><div class="g-rule-line"></div><div class="g-rule-gem"></div><div class="g-rule-line"></div></div>
+      <span class="form-section-label">About Your Piece</span>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">What are you listing? <span class="req">*</span></label><input type="text" id="l_title" class="form-input" placeholder="e.g. Black Sequin Midi Dress" required/></div>
+        <div class="form-group"><label class="form-label">Original Price <span class="req">*</span></label><input type="number" id="l_original_price" class="form-input" placeholder="e.g. 150" min="1" required/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Category <span class="req">*</span></label>
+          <select id="l_category" class="form-select" required>
+            <option value="" disabled selected>What type of item?</option>
+            <option value="dress">Dress</option>
+            <option value="shoes">Shoes</option>
+            <option value="accessory">Accessory</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Occasion <span class="req">*</span></label>
+          <select id="l_occasion" class="form-select" required>
+            <option value="" disabled selected>Best fit occasion</option>
+            <option value="evening">Date Night / Evening</option>
+            <option value="occasion">Graduation / Prom</option>
+            <option value="occasion">Wedding Guest</option>
+            <option value="casual">Girls Night / Brunch</option>
+            <option value="statement">Statement / Gala</option>
+            <option value="casual">Work Event</option>
+            <option value="casual">Baby Shower</option>
+            <option value="statement">Christmas Party</option>
+            <option value="casual">Other</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Size <span class="req">*</span></label><input type="text" id="l_size" class="form-input" placeholder="e.g. US 8 / UK 12" required/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Condition <span class="req">*</span></label>
+          <select id="l_condition" class="form-select" required>
+            <option value="" disabled selected>How is it?</option>
+            <option>Worn once, like new</option>
+            <option>Worn a few times, excellent condition</option>
+            <option>Good condition, minor wear</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Asking Price Per Night ($)</label><input type="number" id="l_price" class="form-input" placeholder="e.g. 35" min="1"/></div>
+      </div>
+      <div class="form-row single"><div class="form-group"><label class="form-label">Describe Your Piece</label><textarea id="l_desc" class="form-textarea" placeholder="Colour, fabric, how it fits, any special details..."></textarea></div></div>
+
+      <div class="g-rule"><div class="g-rule-line"></div><div class="g-rule-gem"></div><div class="g-rule-line"></div></div>
+      <span class="form-section-label">Upload Photos</span>
+      <p style="font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--ghost);text-align:center;margin-bottom:2rem">Up to 5 photos. Real shots only.</p>
+      <div class="photo-upload-area" id="photoUploadArea">
+        <input type="file" id="photoInput" accept="image/*" multiple onchange="handlePhotos(this)" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%"/>
+        <div id="photoUploadInner">
+          <span class="upload-glyph">✦</span>
+          <p class="upload-main">Tap to upload photos</p>
+          <p class="upload-sub">JPG · PNG · HEIC · Up to 5 photos</p>
+        </div>
+      </div>
+      <div class="photo-previews" id="photoPreviews"></div>
+
+      <button type="submit" class="submit-btn">Submit Your Listing ✦</button>
+      <p class="form-note">We review every listing before it goes live. You will hear from us within 24 hours.</p>
+      <p id="lendError" style="color:#e87c7c;font-family:'Cormorant Garamond',serif;font-style:italic;text-align:center;margin-top:1rem;display:none"></p>
+    </form>
+
+    <div class="success-msg" id="lendSuccess">
+      <p class="success-title">You are in the circle ✦</p>
+      <p class="success-sub">Your listing has been submitted and is pending approval. We will be in touch within 24 hours.</p>
+    </div>
+  </div>
+</section>
+
+<!-- RENTER FORM -->
+<section class="form-section" id="rent">
+  <div class="form-wrap">
+    <div class="form-intro">
+      <h2 class="form-title">Request a Piece</h2>
+      <p class="form-sub">Browse the wardrobe and click I Want This on the piece you love — or fill this in and tell us what you are looking for.</p>
+    </div>
+
+    <form id="rentForm" action="https://formspree.io/f/xbderygg" method="POST">
+      <input type="hidden" name="_subject" value="New Rental Request — Fairies"/>
+      <input type="hidden" name="form_type" value="rental_request"/>
+
+      <div class="g-rule"><div class="g-rule-line"></div><div class="g-rule-gem"></div><div class="g-rule-line"></div></div>
+      <span class="form-section-label">Your Details</span>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">First Name <span class="req">*</span></label><input type="text" name="first_name" class="form-input" placeholder="First name" required/></div>
+        <div class="form-group"><label class="form-label">Last Name <span class="req">*</span></label><input type="text" name="last_name" class="form-input" placeholder="Last name" required/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Email <span class="req">*</span></label><input type="email" name="email" class="form-input" placeholder="your@email.com" required/></div>
+        <div class="form-group"><label class="form-label">Phone <span class="req">*</span></label><input type="tel" name="phone" class="form-input" placeholder="(617) 000-0000" required/></div>
+      </div>
+
+      <div class="g-rule"><div class="g-rule-line"></div><div class="g-rule-gem"></div><div class="g-rule-line"></div></div>
+      <span class="form-section-label">Delivery Address</span>
+      <div class="address-block">
+        <span class="address-title">✦ Where should we deliver?</span>
+        <div class="form-row single"><div class="form-group"><label class="form-label">Street Address <span class="req">*</span></label><input type="text" name="delivery_street" class="form-input" placeholder="e.g. 123 Newbury Street" required/></div></div>
+        <div class="form-row single"><div class="form-group"><label class="form-label">Apt / Unit</label><input type="text" name="delivery_apt" class="form-input" placeholder="Apt 2B (if applicable)"/></div></div>
+        <div class="form-row thirds">
+          <div class="form-group"><label class="form-label">City <span class="req">*</span></label><input type="text" name="delivery_city" class="form-input" placeholder="Boston" required/></div>
+          <div class="form-group"><label class="form-label">State <span class="req">*</span></label><input type="text" name="delivery_state" class="form-input" placeholder="MA" required/></div>
+          <div class="form-group"><label class="form-label">ZIP <span class="req">*</span></label><input type="text" name="delivery_zip" class="form-input" placeholder="02101" required/></div>
+        </div>
+        <div class="form-row single"><div class="form-group"><label class="form-label">Delivery Instructions</label><input type="text" name="delivery_notes" class="form-input" placeholder="e.g. Ring doorbell, buzz #3B"/></div></div>
+      </div>
+
+      <div class="g-rule"><div class="g-rule-line"></div><div class="g-rule-gem"></div><div class="g-rule-line"></div></div>
+      <span class="form-section-label">What You Need</span>
+      <div class="form-row single"><div class="form-group"><label class="form-label">Which piece are you requesting?</label><input type="text" name="piece_requested" class="form-input" placeholder="Name the piece or describe what you are looking for"/></div></div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Event Date <span class="req">*</span></label>
+          <input type="date" name="event_date" id="eventDate" class="form-input" required onchange="calcDates()"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Delivery and Collection</label>
+          <div id="datesSummary" class="date-summary"><span style="color:var(--ghost)">Select your event date above</span></div>
+          <input type="hidden" name="delivery_date" id="deliveryDate"/>
+          <input type="hidden" name="collection_date" id="collectionDate"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Occasion <span class="req">*</span></label>
+          <select name="occasion" class="form-select" required>
+            <option value="" disabled selected>What is it for?</option>
+            <option>Date Night</option><option>Graduation</option><option>Wedding Guest</option>
+            <option>Prom</option><option>Girls Night</option><option>Work Event</option>
+            <option>Baby Shower</option><option>Christmas Party</option><option>Other</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Your Size <span class="req">*</span></label><input type="text" name="size" class="form-input" placeholder="e.g. US 8 / UK 12" required/></div>
+      </div>
+
+      <div class="g-rule"><div class="g-rule-line"></div><div class="g-rule-gem"></div><div class="g-rule-line"></div></div>
+      <span class="form-section-label">✦ Add a Tip for Your Delivery ✦</span>
+      <p style="font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--ghost);text-align:center;margin-bottom:2rem">100% of your tip goes directly to your Fairies delivery person.</p>
+      <div class="tip-options">
+        <button type="button" class="tip-btn" onclick="setTip(3,this)">$3</button>
+        <button type="button" class="tip-btn" onclick="setTip(5,this)">$5</button>
+        <button type="button" class="tip-btn" onclick="setTip(10,this)">$10</button>
+        <button type="button" class="tip-btn" onclick="setTip(0,this)">No tip</button>
+      </div>
+      <div style="margin-top:1rem;text-align:center">
+        <div style="position:relative;max-width:200px;margin:0 auto">
+          <span style="position:absolute;left:0;top:.8rem;font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-style:italic;color:var(--gold)">$</span>
+          <input type="number" name="tip_amount" id="tipAmount" class="form-input" placeholder="0.00" min="0" step="0.50" style="padding-left:1.2rem" oninput="clearTipBtns()"/>
+        </div>
+      </div>
+
+      <div class="g-rule"><div class="g-rule-line"></div><div class="g-rule-gem"></div><div class="g-rule-line"></div></div>
+      <div class="form-row single"><div class="form-group"><label class="form-label">Anything else?</label><textarea name="notes" class="form-textarea" placeholder="Any other details..."></textarea></div></div>
+
+      <button type="submit" class="submit-btn">Send My Request ✦</button>
+      <p class="form-note">We will be in touch within a few hours to confirm your booking. Payment is required before delivery.</p>
+    </form>
+
+    <div class="success-msg" id="rentSuccess">
+      <p class="success-title">Request received ✦</p>
+      <p class="success-sub">We will confirm your booking and send payment details within a few hours. Get ready for your moment.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="foot-logo">Fairies</div>
+  <ul class="foot-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="wardrobe.html">Browse</a></li>
+    <li><a href="terms.html">Terms</a></li>
+    <li><a href="https://www.instagram.com/wearfairies-" target="_blank">Instagram</a></li>
+  </ul>
+  <p class="foot-copy">© 2026 Fairies Dress Lending · Boston, MA</p>
+</footer>
+
+<script>
+  // Wait for Supabase to load before initializing
+  window.addEventListener('load', function() {
+    try {
+      // Cursor
+      const cur = document.getElementById('cur');
+      const ring = document.getElementById('cur-ring');
+      let mx=0,my=0,rx=0,ry=0;
+      document.addEventListener('mousemove', function(e) {
+        mx=e.clientX; my=e.clientY;
+        cur.style.left=mx+'px'; cur.style.top=my+'px';
+      });
+      (function lag() {
+        rx+=(mx-rx)*.1; ry+=(my-ry)*.1;
+        ring.style.left=rx+'px'; ring.style.top=ry+'px';
+        requestAnimationFrame(lag);
+      })();
+
+      function haptic(p) {
+        p = p || [10,50,10];
+        if(navigator.vibrate) navigator.vibrate(p);
+      }
+
+      // Init Supabase
+      var SUPABASE_URL = 'https://abybbjhlyzitdvvqcdzf.supabase.co';
+      var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFieWJiamhseXppdGR2dnFjZHpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1MjEwMjYsImV4cCI6MjA5NjA5NzAyNn0.0xsA_yL_XzBAzKA3f1wD3r5rYsFJ9a6ARG-QNVJdjSw';
+      var db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+      // Tabs
+      window.switchTab = function(tab) {
+        document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+        document.querySelectorAll('.form-section').forEach(function(s){ s.classList.remove('active'); });
+        document.getElementById('tab-'+tab).classList.add('active');
+        document.getElementById(tab).classList.add('active');
+        haptic([8,20,8]);
+        window.location.hash = tab;
+        window.scrollTo({top:0, behavior:'smooth'});
+      };
+      if(window.location.hash==='#rent') window.switchTab('rent');
+      if(window.location.hash==='#lend') window.switchTab('lend');
+
+      // Photo upload
+      var selectedPhotos = [];
+      window.handlePhotos = function(input) {
+        var files = Array.from(input.files);
+        var remaining = 5 - selectedPhotos.length;
+        files.slice(0, remaining).forEach(function(file) {
+          if(!file.type.startsWith('image/')) return;
+          var reader = new FileReader();
+          reader.onload = function(e) {
+            selectedPhotos.push({file: file, url: e.target.result});
+            renderPreviews();
+            haptic([8,20,8]);
+          };
+          reader.readAsDataURL(file);
+        });
+        input.value = '';
+      };
+
+      function renderPreviews() {
+        var container = document.getElementById('photoPreviews');
+        var mainEl = document.querySelector('#photoUploadInner .upload-main');
+        var subEl = document.querySelector('#photoUploadInner .upload-sub');
+        container.innerHTML = '';
+        if(selectedPhotos.length > 0) {
+          var count = document.createElement('p');
+          count.className = 'photo-count';
+          count.textContent = selectedPhotos.length + ' of 5 photos selected';
+          container.appendChild(count);
+        }
+        selectedPhotos.forEach(function(p, i) {
+          var wrap = document.createElement('div'); wrap.className = 'preview-wrap';
+          var img = document.createElement('img'); img.src = p.url; img.alt = 'Photo '+(i+1);
+          var btn = document.createElement('button'); btn.className = 'preview-remove'; btn.type = 'button'; btn.innerHTML = '✕';
+          btn.onclick = function() { selectedPhotos.splice(i,1); renderPreviews(); haptic([5]); };
+          wrap.appendChild(img); wrap.appendChild(btn); container.appendChild(wrap);
+        });
+        if(mainEl) {
+          if(selectedPhotos.length >= 5) { mainEl.textContent='Maximum 5 photos reached'; subEl.textContent='Remove a photo to add another'; }
+          else { mainEl.textContent = selectedPhotos.length > 0 ? 'Tap to add more photos' : 'Tap to upload photos'; subEl.textContent='JPG · PNG · HEIC · Up to 5 photos'; }
+        }
+      }
+
+      // Lend form → Supabase + Formspree
+      document.getElementById('lendForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        var btn = this.querySelector('.submit-btn');
+        var errEl = document.getElementById('lendError');
+        btn.textContent = 'Submitting...'; btn.disabled = true; errEl.style.display='none';
+
+        var listingData = {
+          title: document.getElementById('l_title').value.trim(),
+          description: document.getElementById('l_desc').value.trim(),
+          occasion: document.getElementById('l_occasion').value,
+          category: document.getElementById('l_category').value,
+          size: document.getElementById('l_size').value.trim(),
+          condition: document.getElementById('l_condition').value,
+          price_per_night: parseFloat(document.getElementById('l_price').value) || null,
+          original_price: parseFloat(document.getElementById('l_original_price').value) || null,
+          lister_name: (document.getElementById('l_first').value + ' ' + document.getElementById('l_last').value).trim(),
+          lister_email: document.getElementById('l_email').value.trim(),
+          lister_phone: document.getElementById('l_phone').value.trim(),
+          street_address: document.getElementById('l_street').value.trim(),
+          apt: document.getElementById('l_apt').value.trim(),
+          city: document.getElementById('l_city').value.trim(),
+          state: document.getElementById('l_state').value.trim(),
+          zip: document.getElementById('l_zip').value.trim(),
+          neighbourhood: document.getElementById('l_city').value.trim(),
+          tags: [document.getElementById('l_occasion').value, document.getElementById('l_category').value],
+          status: 'pending',
+          availability: 'available'
+        };
+
+        // Upload photos to Supabase Storage first
+        var imageUrl = '';
+        if(selectedPhotos.length > 0) {
+          var photo = selectedPhotos[0];
+          var ext = photo.file.name.split('.').pop();
+          var fileName = 'listing-' + Date.now() + '.' + ext;
+          var uploadResult = await db.storage
+            .from('listings')
+            .upload(fileName, photo.file, { cacheControl: '3600', upsert: false });
+          
+          if(!uploadResult.error) {
+            var urlResult = db.storage.from('listings').getPublicUrl(fileName);
+            imageUrl = urlResult.data.publicUrl;
+          }
+        }
+
+        // Add image URL to listing data
+        listingData.image_url = imageUrl;
+
+        // Insert to Supabase
+        var result = await db.from('listings').insert([listingData]);
+
+        if(result.error) {
+          console.error('Supabase error:', result.error);
+          errEl.textContent = 'Error: ' + result.error.message + '. Please try again.';
+          errEl.style.display = 'block';
+          btn.textContent = 'Submit Your Listing ✦'; btn.disabled = false;
+          return;
+        }
+
+        // Also send email via Formspree
+        var fd = new FormData();
+        Object.keys(listingData).forEach(function(k) { fd.append(k, listingData[k] || ''); });
+        fd.append('_subject', '✦ New Listing Submission — Fairies');
+        fetch('https://formspree.io/f/xbderygg', {method:'POST', body:fd, headers:{'Accept':'application/json'}});
+
+        // Success
+        document.getElementById('lendForm').style.display = 'none';
+        document.getElementById('lendSuccess').classList.add('show');
+        haptic([15,50,15,50,15]);
+      });
+
+      // Rent form → Formspree
+      document.getElementById('rentForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var btn = this.querySelector('.submit-btn');
+        btn.textContent = 'Sending...'; btn.disabled = true;
+        fetch(this.action, {method:'POST', body:new FormData(this), headers:{'Accept':'application/json'}})
+          .then(function() { document.getElementById('rentForm').style.display='none'; document.getElementById('rentSuccess').classList.add('show'); haptic([15,50,15,50,15]); })
+          .catch(function() { document.getElementById('rentForm').style.display='none'; document.getElementById('rentSuccess').classList.add('show'); });
+      });
+
+      // Date calculator
+      window.calcDates = function() {
+        var val = document.getElementById('eventDate').value;
+        if(!val) return;
+        var event = new Date(val+'T12:00:00');
+        var delivery = new Date(event); delivery.setDate(event.getDate()-1);
+        var collection = new Date(event); collection.setDate(event.getDate()+1);
+        var fmt = function(d) { return d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}); };
+        document.getElementById('deliveryDate').value = delivery.toISOString().split('T')[0];
+        document.getElementById('collectionDate').value = collection.toISOString().split('T')[0];
+        document.getElementById('datesSummary').innerHTML =
+          '<span>✦ Delivery: <span style="color:var(--ember)">' + fmt(delivery) + '</span></span><br>' +
+          '<span>✦ Collection: <span style="color:var(--ember)">' + fmt(collection) + '</span></span>';
+        haptic([8,20,8]);
+      };
+
+      // Tip
+      window.setTip = function(amount, btn) {
+        document.querySelectorAll('.tip-btn').forEach(function(b){ b.classList.remove('selected'); });
+        btn.classList.add('selected');
+        document.getElementById('tipAmount').value = amount > 0 ? amount : '';
+        haptic([8,20,8]);
+      };
+      window.clearTipBtns = function() {
+        document.querySelectorAll('.tip-btn').forEach(function(b){ b.classList.remove('selected'); });
+      };
+
+    } catch(err) {
+      console.error('Init error:', err);
+    }
+  });
+</script>
+</body>
+</html>

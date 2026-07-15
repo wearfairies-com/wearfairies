@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/png" href="logo_icon.png"/>
+  <title>Join Fairies</title>
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Cinzel:wght@400;500;600&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--void:#020c08;--forest:#071410;--canopy:#0a1e12;--moss:#133220;--gold:#c9a84c;--ember:#e2c068;--spark:#f5e199;--ivory:#f2ead6;--cream:#e0d4b8;--mist:#8aab92;--ghost:#4a6e55}
+    html{scroll-behavior:smooth}
+    body{background:var(--void);color:var(--ivory);font-family:'DM Sans',sans-serif;overflow-x:hidden;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem}
+    body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23g)' opacity='0.06'/%3E%3C/svg%3E");pointer-events:none;z-index:8000;mix-blend-mode:screen;opacity:.45}
+
+    .auth-container{position:relative;z-index:1;width:100%;max-width:500px}
+    .auth-card{background:rgba(2,12,8,.97);border:1px solid rgba(201,168,76,.15);padding:3rem 2.5rem;backdrop-filter:blur(12px)}
+    .auth-logo{font-family:'Great Vibes',cursive;font-size:3rem;color:var(--ember);text-align:center;margin-bottom:1rem;text-shadow:0 0 30px rgba(201,168,76,.3)}
+    .auth-tagline{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-style:italic;color:var(--mist);text-align:center;margin-bottom:2.5rem}
+    
+    .auth-toggle{display:flex;justify-content:center;gap:1rem;margin-bottom:2rem;border-bottom:1px solid rgba(201,168,76,.1);padding-bottom:1.5rem}
+    .auth-toggle-btn{font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;background:transparent;border:none;color:var(--mist);padding:1rem;cursor:pointer;transition:all .3s;border-bottom:2px solid transparent}
+    .auth-toggle-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
+    .auth-toggle-btn:hover{color:var(--ember)}
+
+    .auth-form{display:none}
+    .auth-form.active{display:block}
+
+    .form-group{margin-bottom:1.5rem}
+    .form-label{font-family:'Cinzel',serif;font-size:.56rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:.6rem}
+    .form-input{width:100%;background:transparent;border:none;border-bottom:1px solid rgba(201,168,76,.2);padding:.8rem 0;color:var(--ivory);font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-style:italic;outline:none;transition:border-color .3s}
+    .form-input:focus{border-bottom-color:var(--gold)}
+    .form-input::placeholder{color:var(--ghost)}
+
+    .form-submit{font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.22em;text-transform:uppercase;width:100%;color:var(--void);background:linear-gradient(135deg,var(--gold) 0%,var(--ember) 50%,var(--gold) 100%);background-size:220% 100%;border:none;padding:1.1rem;cursor:pointer;transition:all .3s;margin-top:1rem;box-shadow:0 4px 24px rgba(201,168,76,.28)}
+    .form-submit:hover{background-position:100% 0;transform:translateY(-2px)}
+    .form-submit:disabled{opacity:.5;cursor:not-allowed}
+
+    .form-error{color:#e87c7c;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:.95rem;margin-top:.5rem;display:none}
+    .form-error.show{display:block}
+
+    .auth-footer{text-align:center;margin-top:1.5rem;font-family:'Cormorant Garamond',serif;font-size:.95rem;font-style:italic;color:var(--ghost)}
+    .auth-footer a{color:var(--gold);text-decoration:none;transition:color .3s}
+    .auth-footer a:hover{color:var(--ember)}
+
+    .success-msg{display:none;text-align:center;padding:2rem;background:rgba(26,92,46,.2);border:1px solid rgba(26,92,46,.4);border-radius:4px;margin-bottom:1.5rem}
+    .success-msg.show{display:block}
+    .success-msg p{font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--ivory);line-height:1.7}
+
+    @media(max-width:600px){
+      .auth-card{padding:2rem 1.5rem}
+      .auth-logo{font-size:2.5rem}
+    }
+  </style>
+</head>
+<body>
+
+<div class="auth-container">
+  <div class="auth-card">
+    <p class="auth-logo">Fairies</p>
+    <p class="auth-tagline">✦ Join the Circle ✦</p>
+
+    <div class="auth-toggle">
+      <button class="auth-toggle-btn active" onclick="showForm('signup')">Sign Up</button>
+      <button class="auth-toggle-btn" onclick="showForm('login')">Sign In</button>
+    </div>
+
+    <!-- SIGNUP FORM -->
+    <form class="auth-form active" id="signupForm" onsubmit="handleSignup(event)">
+      <div class="success-msg" id="signupSuccess">
+        <p>Account created! Redirecting to your dashboard...</p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Full Name *</label>
+        <input type="text" class="form-input" id="signup_name" placeholder="Your name" required/>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Email *</label>
+        <input type="email" class="form-input" id="signup_email" placeholder="your@email.com" required/>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Password *</label>
+        <input type="password" class="form-input" id="signup_password" placeholder="At least 8 characters" required/>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Phone Number</label>
+        <input type="tel" class="form-input" id="signup_phone" placeholder="(617) 000-0000"/>
+      </div>
+
+      <button type="submit" class="form-submit">Create Account ✦</button>
+      <div class="form-error" id="signupError"></div>
+    </form>
+
+    <!-- LOGIN FORM -->
+    <form class="auth-form" id="loginForm" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label class="form-label">Email *</label>
+        <input type="email" class="form-input" id="login_email" placeholder="your@email.com" required/>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Password *</label>
+        <input type="password" class="form-input" id="login_password" placeholder="Your password" required/>
+      </div>
+
+      <button type="submit" class="form-submit">Sign In ✦</button>
+      <div class="form-error" id="loginError"></div>
+    </form>
+
+    <p class="auth-footer">
+      By continuing, you agree to our <a href="terms.html">Terms of Service</a>
+    </p>
+  </div>
+</div>
+
+<script>
+  // Supabase init
+  var db;
+  window.addEventListener('load', function() {
+    db = window.supabase.createClient(
+      'https://abybbjhlyzitdvvqcdzf.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFieWJiamhseXppdGR2dnFjZHpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1MjEwMjYsImV4cCI6MjA5NjA5NzAyNn0.0xsA_yL_XzBAzKA3f1wD3r5rYsFJ9a6ARG-QNVJdjSw'
+    );
+
+    // Check if already logged in
+    db.auth.onAuthStateChange((event, session) => {
+      if(session) {
+        window.location.href = 'dashboard.html';
+      }
+    });
+  });
+
+  function showForm(form){
+    document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+    document.querySelectorAll('.auth-toggle-btn').forEach(b => b.classList.remove('active'));
+    
+    document.getElementById(form + 'Form').classList.add('active');
+    event.target.classList.add('active');
+  }
+
+  async function handleSignup(e){
+    e.preventDefault();
+    
+    var name = document.getElementById('signup_name').value;
+    var email = document.getElementById('signup_email').value;
+    var password = document.getElementById('signup_password').value;
+    var phone = document.getElementById('signup_phone').value;
+    var btn = e.target.querySelector('button');
+    var errEl = document.getElementById('signupError');
+    
+    btn.disabled = true;
+    btn.textContent = 'Creating...';
+    errEl.classList.remove('show');
+
+    try {
+      // Sign up with Supabase Auth
+      var authRes = await db.auth.signUp({ email, password });
+      if(authRes.error) throw authRes.error;
+
+      var userId = authRes.data.user.id;
+
+      // Create lender profile
+      var profileRes = await db.from('lenders').insert([{
+        user_id: userId,
+        name: name,
+        email: email,
+        phone: phone,
+        stripe_connected_account: null,
+        created_at: new Date().toISOString()
+      }]);
+
+      if(profileRes.error) throw profileRes.error;
+
+      document.getElementById('signupSuccess').classList.add('show');
+      setTimeout(() => {
+        window.location.href = 'dashboard.html';
+      }, 2000);
+
+    } catch(err) {
+      errEl.textContent = err.message || 'Signup failed. Try again.';
+      errEl.classList.add('show');
+      btn.disabled = false;
+      btn.textContent = 'Create Account ✦';
+    }
+  }
+
+  async function handleLogin(e){
+    e.preventDefault();
+    
+    var email = document.getElementById('login_email').value;
+    var password = document.getElementById('login_password').value;
+    var btn = e.target.querySelector('button');
+    var errEl = document.getElementById('loginError');
+    
+    btn.disabled = true;
+    btn.textContent = 'Signing in...';
+    errEl.classList.remove('show');
+
+    try {
+      var res = await db.auth.signInWithPassword({ email, password });
+      if(res.error) throw res.error;
+
+      window.location.href = 'dashboard.html';
+
+    } catch(err) {
+      errEl.textContent = err.message || 'Login failed. Try again.';
+      errEl.classList.add('show');
+      btn.disabled = false;
+      btn.textContent = 'Sign In ✦';
+    }
+  }
+</script>
+</body>
+</html>
