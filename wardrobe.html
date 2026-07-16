@@ -8,6 +8,67 @@
   <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Cinzel:wght@400;500;600&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet"/>
   <script src="https://js.stripe.com/v3/"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
+<script src="renter-auth-modal.js"></script>
+<style>
+  /* Renter Auth Modal Styles */
+  #renterAuthOverlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.85);
+    backdrop-filter: blur(8px);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+  }
+  #renterAuthOverlay.open {
+    display: flex;
+  }
+  .renter-auth-card {
+    background: rgba(2,12,8,.97);
+    border: 1px solid rgba(201,168,76,.15);
+    padding: 2.5rem;
+    max-width: 450px;
+    width: 90%;
+  }
+  .renter-auth-title {
+    font-family: 'Great Vibes',cursive;
+    font-size: 2.5rem;
+    color: var(--ember);
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+  .renter-auth-toggle {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid rgba(201,168,76,.1);
+    padding-bottom: 1.5rem;
+  }
+  .renter-auth-toggle-btn {
+    font-family: 'Cinzel',serif;
+    font-size: .65rem;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    background: transparent;
+    border: none;
+    color: var(--mist);
+    padding: 1rem;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all .3s;
+  }
+  .renter-auth-toggle-btn.active {
+    color: var(--gold);
+    border-bottom-color: var(--gold);
+  }
+  .renter-auth-form {
+    display: none;
+  }
+  .renter-auth-form.active {
+    display: block;
+  }
+</style>
   <!-- Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-VPM2FPG2DW"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-VPM2FPG2DW');</script>
@@ -282,7 +343,60 @@
   </div>
 </div>
 
-<!-- I WANT THIS MODAL -->
+<!-- RENTER AUTH MODAL -->
+<div id="renterAuthOverlay" class="modal-overlay">
+  <div class="renter-auth-card">
+    <p class="renter-auth-title">Fairies</p>
+    
+    <div class="renter-auth-toggle">
+      <button class="renter-auth-toggle-btn active" onclick="showRenterForm('signup')">Sign Up</button>
+      <button class="renter-auth-toggle-btn" onclick="showRenterForm('login')">Sign In</button>
+    </div>
+
+    <!-- SIGNUP -->
+    <form class="renter-auth-form active" onsubmit="handleRenterSignup(event)">
+      <div class="success-msg" id="renterSignupSuccess" style="margin-bottom:1.5rem">
+        <p>Account created! Proceeding to booking...</p>
+      </div>
+      <div class="form-group" style="margin-bottom:1.5rem">
+        <label class="form-label">Full Name *</label>
+        <input type="text" class="form-input" id="renter_signup_name" placeholder="Your name" required/>
+      </div>
+      <div class="form-group" style="margin-bottom:1.5rem">
+        <label class="form-label">Email *</label>
+        <input type="email" class="form-input" id="renter_signup_email" placeholder="your@email.com" required/>
+      </div>
+      <div class="form-group" style="margin-bottom:1.5rem">
+        <label class="form-label">Password *</label>
+        <input type="password" class="form-input" id="renter_signup_password" placeholder="At least 8 characters" required/>
+      </div>
+      <div class="form-group" style="margin-bottom:1.5rem">
+        <label class="form-label">Phone</label>
+        <input type="tel" class="form-input" id="renter_signup_phone" placeholder="(617) 000-0000"/>
+      </div>
+      <button type="submit" class="form-submit" style="width:100%">Create Account ✦</button>
+      <div class="form-error" id="renterSignupError"></div>
+    </form>
+
+    <!-- LOGIN -->
+    <form class="renter-auth-form" onsubmit="handleRenterLogin(event)">
+      <div class="form-group" style="margin-bottom:1.5rem">
+        <label class="form-label">Email *</label>
+        <input type="email" class="form-input" id="renter_login_email" placeholder="your@email.com" required/>
+      </div>
+      <div class="form-group" style="margin-bottom:1.5rem">
+        <label class="form-label">Password *</label>
+        <input type="password" class="form-input" id="renter_login_password" placeholder="Your password" required/>
+      </div>
+      <button type="submit" class="form-submit" style="width:100%">Sign In ✦</button>
+      <div class="form-error" id="renterLoginError"></div>
+    </form>
+
+    <button class="modal-close" onclick="closeRenterAuthModal()" style="position:absolute;top:1.5rem;right:1.5rem">✕</button>
+  </div>
+</div>
+
+
 <div class="modal-overlay" id="modalOverlay" onclick="closeModalBg(event)">
   <div class="modal">
     <button class="modal-close" onclick="closeModal()">✕</button>
@@ -686,7 +800,7 @@ document.getElementById('wantForm').addEventListener('submit', async function(e)
 
   // Initiate Stripe payment
   try {
-    const res = await fetch('/.netlify/functions/create-payment', {
+    const res = await fetch('/api/create-payment', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
@@ -759,7 +873,7 @@ async function processPayment(){
   var totalAmount = (activeListing.price_per_night * 1) + tipAmount;
 
   try {
-    var response = await fetch('/.netlify/functions/create-payment', {
+    var response = await fetch('/api/create-payment', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -816,7 +930,7 @@ async function submitPaymentFromModal(){
   var totalAmount = rentalAmount + tip;
 
   try {
-    var response = await fetch('/.netlify/functions/create-payment', {
+    var response = await fetch('/api/create-payment', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -948,6 +1062,16 @@ function nextPhoto(){
 
 function goToWantThis(){
   closeDetailModal();
+
+  // Browsing is open to anyone. Booking needs an account so we know
+  // who has the piece and how to reach them.
+  if(!currentRenter){
+    window.pendingListingId = currentListingDetail.id;
+    document.getElementById('renterAuthOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    return;
+  }
+
   openModal(currentListingDetail.id);
 }
 

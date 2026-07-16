@@ -178,8 +178,21 @@
   function updateStripeStatus(){
     var statusEl = document.getElementById('stripeStatus');
     var btnEl = document.getElementById('stripeBtn');
-    
-    if(lenderProfile.stripe_connected_account) {
+
+    // Surface whatever the OAuth callback bounced back with.
+    var params = new URLSearchParams(window.location.search);
+    if(params.get('stripe') === 'error') {
+      statusEl.textContent = '✕ Connection failed: ' + (params.get('reason') || 'unknown error');
+      statusEl.classList.add('disconnected');
+      statusEl.classList.remove('connected');
+      btnEl.textContent = 'Try Again ✦';
+      return;
+    }
+
+    // Only a real Stripe account id counts. Anything else means the
+    // handshake never finished and no money would reach this lender.
+    var acct = lenderProfile.stripe_connected_account;
+    if(typeof acct === 'string' && acct.indexOf('acct_') === 0) {
       statusEl.textContent = '✓ Connected';
       statusEl.classList.remove('disconnected');
       statusEl.classList.add('connected');
@@ -195,7 +208,7 @@
   function connectStripe(){
     // Stripe Connect OAuth flow
     var clientId = 'ca_Ucs8iHo69gAMk2jfnyhcPCb5jh0E1Epx';
-    var redirectUri = encodeURIComponent('https://wearfairies.com/stripe-callback.html');
+    var redirectUri = encodeURIComponent('https://wearfairies.com/api/stripe-connect-callback');
     var state = btoa(JSON.stringify({user_id: currentUser.id, from_dashboard: true}));
     
     window.location.href = `https://connect.stripe.com/oauth/authorize?response_type=code&scope=read_write&client_id=${clientId}&state=${state}&redirect_uri=${redirectUri}`;

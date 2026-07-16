@@ -130,10 +130,18 @@
     // Check if already logged in
     db.auth.onAuthStateChange((event, session) => {
       if(session) {
-        window.location.href = 'dashboard.html';
+        window.location.href = afterAuthDest();
       }
     });
   });
+
+  // Where to land after auth: honour ?redirect= if present, else dashboard.
+  function afterAuthDest(){
+    var r = new URLSearchParams(window.location.search).get('redirect');
+    // Only allow same-site relative paths — never an absolute URL.
+    if(r && r.indexOf('//') === -1 && r.charAt(0) !== '/') return r;
+    return 'dashboard.html';
+  }
 
   function showForm(form){
     document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
@@ -178,7 +186,7 @@
 
       document.getElementById('signupSuccess').classList.add('show');
       setTimeout(() => {
-        window.location.href = 'dashboard.html';
+        window.location.href = afterAuthDest();
       }, 2000);
 
     } catch(err) {
@@ -205,7 +213,7 @@
       var res = await db.auth.signInWithPassword({ email, password });
       if(res.error) throw res.error;
 
-      window.location.href = 'dashboard.html';
+      window.location.href = afterAuthDest();
 
     } catch(err) {
       errEl.textContent = err.message || 'Login failed. Try again.';

@@ -110,16 +110,24 @@
 </nav>
 
 <script>
-  // Check if trying to list - require login
+  // Listing requires an account — we need to know who owns the piece
+  // and where to send their 40%. Browsing stays open to everyone.
   window.addEventListener('load', function() {
-    var params = new URLSearchParams(window.location.search);
-    if(params.get('mode') === 'lender') {
-      // Check if user is logged in (check for session storage)
-      if(!sessionStorage.getItem('fairies_user')) {
-        // Redirect to auth
-        window.location.href = 'auth.html?redirect=list.html?mode=lender';
-      }
-    }
+    setTimeout(function() {
+      if(typeof window.supabase === 'undefined') return;
+
+      var gate = window.supabase.createClient(
+        'https://abybbjhlyzitdvvqcdzf.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFieWJiamhseXppdGR2dnFjZHpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1MjEwMjYsImV4cCI6MjA5NjA5NzAyNn0.0xsA_yL_XzBAzKA3f1wD3r5rYsFJ9a6ARG-QNVJdjSw'
+      );
+
+      gate.auth.getSession().then(function(res) {
+        if(!res.data || !res.data.session) {
+          window.location.href = 'auth.html?redirect=' +
+            encodeURIComponent(window.location.pathname + window.location.search);
+        }
+      });
+    }, 150);
   });
 </script>
 
