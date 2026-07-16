@@ -32,12 +32,13 @@ function closeRenterAuthModal() {
   document.body.style.overflow = '';
 }
 
-function showRenterForm(form) {
-  document.querySelectorAll('.renter-auth-form').forEach(f => f.classList.remove('active'));
-  document.querySelectorAll('.renter-auth-toggle-btn').forEach(b => b.classList.remove('active'));
-  
-  document.getElementById('renter' + form.charAt(0).toUpperCase() + form.slice(1) + 'Form').classList.add('active');
-  event.target.classList.add('active');
+function showRenterForm(form, btn) {
+  document.querySelectorAll('.renter-auth-form').forEach(function(f){ f.classList.remove('active'); });
+  document.querySelectorAll('.renter-auth-toggle-btn').forEach(function(b){ b.classList.remove('active'); });
+
+  var target = form === 'signup' ? 'renterSignupForm' : 'renterLoginForm';
+  document.getElementById(target).classList.add('active');
+  if(btn) btn.classList.add('active');
 }
 
 async function handleRenterSignup(e) {
@@ -73,15 +74,8 @@ async function handleRenterSignup(e) {
     if(profileRes.error) throw profileRes.error;
 
     currentRenter = authRes.data.user;
-    document.getElementById('renterSignupSuccess').classList.add('show');
-    
-    setTimeout(() => {
-      closeRenterAuthModal();
-      // Proceed with "I Want This" flow
-      if(window.pendingListingId) {
-        openModal(window.pendingListingId);
-      }
-    }, 1500);
+    closeRenterAuthModal();
+    if(window.pendingListingId) openModal(window.pendingListingId);
 
   } catch(err) {
     errEl.textContent = err.message || 'Signup failed. Try again.';
