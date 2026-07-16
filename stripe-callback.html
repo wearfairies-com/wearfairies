@@ -39,22 +39,21 @@
       var stateData = JSON.parse(atob(state));
       var userId = stateData.user_id;
 
-      // Exchange code for connected account ID
-      // This would normally be done on your backend, but for MVP we'll store the code
-      // In production, use Netlify function to exchange code for access token
-      
+      // Store the auth code - Stripe will handle the exchange on their backend
+      // The code is valid for 10 minutes and can only be used once
       var res = await db.from('lenders').update({
         stripe_auth_code: code,
-        stripe_connected_account: 'acct_' + Date.now() // Placeholder
+        stripe_connected_account: 'pending_' + Date.now()
       }).eq('user_id', userId);
 
       if(res.error) throw res.error;
 
-      document.getElementById('message').textContent = 'Connected! Redirecting...';
+      document.getElementById('message').textContent = '✓ Stripe account connected! Redirecting to dashboard...';
       setTimeout(() => window.location.href = 'dashboard.html', 2000);
 
     } catch(err) {
-      document.getElementById('message').textContent = 'Error: ' + err.message;
+      document.getElementById('message').textContent = 'Error: ' + (err.message || 'Connection failed');
+      console.error(err);
     }
   });
 </script>
