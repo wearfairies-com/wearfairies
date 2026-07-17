@@ -886,6 +886,18 @@ document.querySelectorAll('a,button').forEach(el=>{
 
 /* MODAL PAYMENT FUNCTION */
 async function submitPaymentFromModal(){
+  // The modal gates entry, but the submit has to check too — otherwise
+  // anything that reaches this function skips the account entirely.
+  // getUser() asks the server rather than trusting local storage.
+  var who = await sb.auth.getUser();
+  if(who.error || !who.data || !who.data.user){
+    closeModal();
+    window.pendingListingId = activeListing ? activeListing.id : null;
+    document.getElementById('renterAuthOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    return;
+  }
+
   var tip = parseFloat(document.getElementById('modalCustomTip').value) || parseFloat(document.getElementById('wantTip').value) || 0;
   document.getElementById('wantTip').value = tip;
   
@@ -1029,18 +1041,23 @@ function nextPhoto(){
   showPhoto(currentPhotoIndex + 1);
 }
 
-function goToWantThis(){
+async function goToWantThis(){
   closeDetailModal();
 
   // Browsing is open to anyone. Booking needs an account so we know
-  // who has the piece and how to reach them.
-  if(!currentRenter){
+  // who has the piece and how to reach them. Ask the server rather than
+  // trusting currentRenter, which is set on page load and goes stale if
+  // the session expires while the tab sits open.
+  var who = await sb.auth.getUser();
+  if(who.error || !who.data || !who.data.user){
+    currentRenter = null;
     window.pendingListingId = currentListingDetail.id;
     document.getElementById('renterAuthOverlay').classList.add('open');
     document.body.style.overflow = 'hidden';
     return;
   }
 
+  currentRenter = who.data.user;
   openModal(currentListingDetail.id);
 }
 

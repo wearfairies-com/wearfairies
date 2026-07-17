@@ -109,41 +109,69 @@
   </ul>
 </nav>
 
+<style>
+  /* The page starts hidden and is only revealed once we've confirmed a
+     signed-in account. The old version rendered the form and *then*
+     redirected, which left a window where you could see it — and hitting
+     back restored the page from cache without the check ever running. */
+  body.gate-pending .page-header,
+  body.gate-pending .form-section { visibility: hidden; }
+  .gate-msg{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:9000;background:var(--void);font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--mist);font-size:1.1rem}
+  body.gate-pending .gate-msg{display:flex}
+</style>
+
+<div class="gate-msg">Checking your account…</div>
+
 <script>
-  // Listing requires an account — we need to know who owns the piece
-  // and where to send their 40%. Browsing stays open to everyone.
-  window.addEventListener('load', function() {
-    setTimeout(function() {
-      if(typeof window.supabase === 'undefined') return;
+  document.body.classList.add('gate-pending');
 
-      var gate = window.supabase.createClient(
-        'https://abybbjhlyzitdvvqcdzf.supabase.co',
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFieWJiamhseXppdGR2dnFjZHpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1MjEwMjYsImV4cCI6MjA5NjA5NzAyNn0.0xsA_yL_XzBAzKA3f1wD3r5rYsFJ9a6ARG-QNVJdjSw'
-      );
+  (function(){
+    var SUPA_URL = 'https://abybbjhlyzitdvvqcdzf.supabase.co';
+    var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFieWJiamhseXppdGR2dnFjZHpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1MjEwMjYsImV4cCI6MjA5NjA5NzAyNn0.0xsA_yL_XzBAzKA3f1wD3r5rYsFJ9a6ARG-QNVJdjSw';
 
-      gate.auth.getSession().then(function(res) {
-        if(!res.data || !res.data.session) {
-          window.location.href = 'auth.html?redirect=' +
-            encodeURIComponent(window.location.pathname + window.location.search);
-          return;
-        }
+    function bounce(){
+      window.location.replace('auth.html?redirect=' +
+        encodeURIComponent(window.location.pathname + window.location.search));
+    }
 
-        // Pin the listing to the signed-in account. The email field becomes
-        // a display of who you're listing as, not a free text box — the
-        // database rejects a listing whose email isn't your own.
-        var email = res.data.session.user.email;
-        window.__fairiesUserEmail = email;
+    async function checkAccess(){
+      if(typeof window.supabase === 'undefined'){ return bounce(); }
+      var gate = window.gate || (window.gate = window.supabase.createClient(SUPA_URL, SUPA_KEY));
 
-        var f = document.getElementById('l_email');
-        if(f){
-          f.value = email;
-          f.readOnly = true;
-          f.style.opacity = '.65';
-          f.title = 'Listing as ' + email;
-        }
-      });
-    }, 150);
-  });
+      // getUser() asks the server. getSession() only reads local storage,
+      // which can be forged.
+      var res = await gate.auth.getUser();
+      if(res.error || !res.data || !res.data.user){ return bounce(); }
+
+      var email = res.data.user.email;
+      window.__fairiesUserEmail = email;
+
+      var f = document.getElementById('l_email');
+      if(f){
+        f.value = email;
+        f.readOnly = true;
+        f.style.opacity = '.65';
+        f.title = 'Listing as ' + email;
+      }
+
+      document.body.classList.remove('gate-pending');
+    }
+
+    if(document.readyState === 'loading'){
+      document.addEventListener('DOMContentLoaded', checkAccess);
+    } else {
+      checkAccess();
+    }
+
+    // Back button restores the page from cache without re-running scripts.
+    // pageshow fires on that restore, so re-check and re-hide.
+    window.addEventListener('pageshow', function(e){
+      if(e.persisted){
+        document.body.classList.add('gate-pending');
+        checkAccess();
+      }
+    });
+  })();
 </script>
 
 <div class="page-header">
@@ -160,7 +188,7 @@
   <div class="form-wrap">
     <div class="form-intro">
       <h2 class="form-title">List Your Piece</h2>
-      <p class="form-sub">Fill in the details. Your listing goes to Fairies for approval — once approved it appears live on the wardrobe. You earn 60% of every rental.</p>
+      <p class="form-sub">Fill in the details. Your listing goes to Fairies for approval — once approved it appears live on the wardrobe. You earn 40% of every rental, paid straight to your account.</p>
     </div>
 
     <form id="lendForm">
@@ -393,7 +421,10 @@
       // Init Supabase
       var SUPABASE_URL = 'https://abybbjhlyzitdvvqcdzf.supabase.co';
       var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFieWJiamhseXppdGR2dnFjZHpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1MjEwMjYsImV4cCI6MjA5NjA5NzAyNn0.0xsA_yL_XzBAzKA3f1wD3r5rYsFJ9a6ARG-QNVJdjSw';
-      var db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+      // Reuse the client the login gate already made. Two clients on one
+      // page is what triggers Supabase's "Multiple GoTrueClient instances"
+      // warning — they fight over the same stored session.
+      var db = window.gate || window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
       // Tabs
       window.switchTab = function(tab) {
