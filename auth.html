@@ -172,6 +172,20 @@
 
       var userId = authRes.data.user.id;
 
+      // Same as the renter flow: signUp only hands back a session when email
+      // confirmation is off. Without one the insert runs anonymously and the
+      // database refuses it.
+      if(!authRes.data.session){
+        var signIn = await db.auth.signInWithPassword({ email: email, password: password });
+        if(signIn.error){
+          errEl.textContent = 'Account created — check your email to confirm, then sign in.';
+          errEl.classList.add('show');
+          btn.disabled = false;
+          btn.textContent = 'Create Account \u2726';
+          return;
+        }
+      }
+
       // Create lender profile
       var profileRes = await db.from('lenders').insert([{
         user_id: userId,

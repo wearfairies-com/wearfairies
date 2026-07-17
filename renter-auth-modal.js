@@ -62,6 +62,22 @@ async function handleRenterSignup(e) {
 
     var userId = authRes.data.user.id;
 
+    // signUp only returns a session if email confirmation is off. If it's
+    // on, the account exists but nobody is signed in yet — and the database
+    // rejects writes from anonymous visitors. Sign in explicitly so the
+    // profile insert runs as the account it belongs to.
+    if(!authRes.data.session){
+      var signIn = await renterClient().auth.signInWithPassword({ email: email, password: password });
+      if(signIn.error){
+        // Almost always: Supabase is waiting on email confirmation.
+        errEl.textContent = 'Account created — check your email to confirm, then sign in.';
+        errEl.classList.add('show');
+        btn.disabled = false;
+        btn.textContent = 'Create Account \u2726';
+        return;
+      }
+    }
+
     // Create renter profile
     var profileRes = await renterClient().from('renters').insert([{
       user_id: userId,

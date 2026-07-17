@@ -125,6 +125,21 @@
         if(!res.data || !res.data.session) {
           window.location.href = 'auth.html?redirect=' +
             encodeURIComponent(window.location.pathname + window.location.search);
+          return;
+        }
+
+        // Pin the listing to the signed-in account. The email field becomes
+        // a display of who you're listing as, not a free text box — the
+        // database rejects a listing whose email isn't your own.
+        var email = res.data.session.user.email;
+        window.__fairiesUserEmail = email;
+
+        var f = document.getElementById('l_email');
+        if(f){
+          f.value = email;
+          f.readOnly = true;
+          f.style.opacity = '.65';
+          f.title = 'Listing as ' + email;
         }
       });
     }, 150);
@@ -452,7 +467,10 @@
           price_per_night: parseFloat(document.getElementById('l_price').value) || null,
           original_price: parseFloat(document.getElementById('l_original_price').value) || null,
           lister_name: (document.getElementById('l_first').value + ' ' + document.getElementById('l_last').value).trim(),
-          lister_email: document.getElementById('l_email').value.trim(),
+          // Use the signed-in account's email, not whatever was typed in
+          // the form. The database policy requires these to match — and it
+          // means a lender can't list under someone else's address.
+          lister_email: (window.__fairiesUserEmail || document.getElementById('l_email').value.trim()),
           lister_phone: document.getElementById('l_phone').value.trim(),
           street_address: document.getElementById('l_street').value.trim(),
           apt: document.getElementById('l_apt').value.trim(),
