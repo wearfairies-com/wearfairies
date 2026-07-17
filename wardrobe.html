@@ -260,7 +260,7 @@
     <li><a href="https://www.tiktok.com/@wearfairiess" target="_blank">TikTok</a></li>
     <li><a href="https://www.facebook.com/wearfairies" target="_blank">Facebook</a></li>
   </ul>
-  <p class="foot-copy">© 2026 Fairies Dress Lending · Boston, MA</p>
+  <p class="foot-copy">© 2026 Fairies Dress Lending · Greater Boston, MA</p>
 </footer>
 
 <!-- LISTING DETAIL MODAL -->
@@ -515,7 +515,7 @@
 
         <div class="modal-field">
           <label class="modal-label">✦ Payment ✦</label>
-          <p style="font-family:'Cormorant Garamond',serif;font-size:.95rem;font-style:italic;color:var(--mist);margin-bottom:1rem">Pay securely now. 40% to lender, 60% to Fairies, 100% of tip to your delivery person.</p>
+          <p style="font-family:'Cormorant Garamond',serif;font-size:.95rem;font-style:italic;color:var(--mist);margin-bottom:1rem">Pay securely now. Your card is handled by Stripe — details never touch our servers.</p>
           <div id="card-element" style="border:1px solid rgba(201,168,76,.2);padding:1rem;border-radius:4px;margin-bottom:1rem"></div>
           <div id="card-errors" style="color:#e87c7c;font-family:'Cormorant Garamond',serif;font-style:italic;margin-bottom:1rem;display:none"></div>
         </div>
@@ -943,6 +943,33 @@ async function submitPaymentFromModal(){
     }
 
     if(result.paymentIntent.status === 'succeeded') {
+      // Record the booking. Without this a paid rental exists only as an
+      // email and a Stripe record — there'd be nothing in admin to release
+      // the lender's 40% against once the piece is delivered.
+      try {
+        await sb.from('rental_requests').insert([{
+          listing_id: activeListing.id,
+          piece_title: activeListing.title,
+          lister_name: activeListing.lister_name,
+          // lister_email deliberately omitted — the wardrobe query no longer
+          // returns it (it would expose every lender's email to any visitor).
+          // Admin matches the lender via listing_id.
+          renter_name: document.querySelector('#wantForm [name="renter_name"]').value,
+          renter_email: who.data.user.email,
+          renter_phone: document.querySelector('#wantForm [name="renter_phone"]').value,
+          delivery_address: document.querySelector('#wantForm [name="delivery_address"]').value,
+          event_date: document.querySelector('#wantForm [name="event_date"]').value || null,
+          message: document.querySelector('#wantForm [name="message"]').value || '',
+          tip_amount: tip,
+          payment_intent_id: result.paymentIntent.id,
+          status: 'paid'
+        }]);
+      } catch(dbErr) {
+        // The card has already been charged — don't fail the booking over
+        // a database hiccup. Rome can find it in Stripe either way.
+        console.error('Booking recorded in Stripe but not in database:', dbErr);
+      }
+
       // Submit the hidden form to send confirmation email
       document.getElementById('wantForm').submit();
       

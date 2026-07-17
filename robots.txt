@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /fairy-door-8f2c.html
+Disallow: /dashboard.html
+Disallow: /auth.html
+Disallow: /api/
