@@ -10,64 +10,16 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
 <script src="renter-auth-modal.js"></script>
 <style>
-  /* Renter Auth Modal Styles */
-  #renterAuthOverlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,.85);
-    backdrop-filter: blur(8px);
-    z-index: 9999;
-    align-items: center;
-    justify-content: center;
-  }
-  #renterAuthOverlay.open {
-    display: flex;
-  }
-  .renter-auth-card {
-    background: rgba(2,12,8,.97);
-    border: 1px solid rgba(201,168,76,.15);
-    padding: 2.5rem;
-    max-width: 450px;
-    width: 90%;
-  }
-  .renter-auth-title {
-    font-family: 'Great Vibes',cursive;
-    font-size: 2.5rem;
-    color: var(--ember);
-    text-align: center;
-    margin-bottom: 1rem;
-  }
-  .renter-auth-toggle {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 2rem;
-    border-bottom: 1px solid rgba(201,168,76,.1);
-    padding-bottom: 1.5rem;
-  }
-  .renter-auth-toggle-btn {
-    font-family: 'Cinzel',serif;
-    font-size: .65rem;
-    letter-spacing: .2em;
-    text-transform: uppercase;
-    background: transparent;
-    border: none;
-    color: var(--mist);
-    padding: 1rem;
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    transition: all .3s;
-  }
-  .renter-auth-toggle-btn.active {
-    color: var(--gold);
-    border-bottom-color: var(--gold);
-  }
-  .renter-auth-form {
-    display: none;
-  }
-  .renter-auth-form.active {
-    display: block;
-  }
+  /* Renter Auth Modal — reuses wardrobe's .modal-overlay / .modal
+     show-hide behaviour. Only the toggle tabs need new rules. */
+  .renter-auth-toggle{display:flex;gap:1rem;margin-bottom:2rem;border-bottom:1px solid rgba(201,168,76,.1);padding-bottom:1.2rem}
+  .renter-auth-toggle-btn{font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;background:transparent;border:none;color:var(--mist);padding:.6rem .4rem;cursor:pointer;border-bottom:2px solid transparent;transition:color .3s,border-color .3s}
+  .renter-auth-toggle-btn:hover{color:var(--ember)}
+  .renter-auth-toggle-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
+  .renter-auth-form{display:none}
+  .renter-auth-form.active{display:block}
+  .renter-auth-err{color:#e87c7c;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:.95rem;margin-top:.8rem;display:none}
+  .renter-auth-err.show{display:block}
 </style>
   <!-- Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-VPM2FPG2DW"></script>
@@ -304,12 +256,94 @@
     <li><a href="index.html">Home</a></li>
     <li><a href="list.html">List a Piece</a></li>
     <li><a href="terms.html">Terms</a></li>
-    <li><a href="https://www.instagram.com/wearfairies-" target="_blank">Instagram</a></li>
+    <li><a href="https://www.instagram.com/wearfairies" target="_blank">Instagram</a></li>
     <li><a href="https://www.tiktok.com/@wearfairiess" target="_blank">TikTok</a></li>
-    <li><a href="https://www.facebook.com/wearfairies-facebook" target="_blank">Facebook</a></li>
+    <li><a href="https://www.facebook.com/wearfairies" target="_blank">Facebook</a></li>
   </ul>
   <p class="foot-copy">© 2026 Fairies Dress Lending · Boston, MA</p>
 </footer>
+
+<!-- LISTING DETAIL MODAL -->
+<div class="modal-overlay" id="detailOverlay" onclick="closeDetailModal(event)">
+  <div class="modal" style="max-width:600px">
+    <button class="modal-close" onclick="closeDetailModal()">✕</button>
+    
+    <div id="detailContent">
+      <div style="position:relative;margin-bottom:2rem">
+        <div id="photoCarousel" style="position:relative;width:100%;aspect-ratio:1;background:var(--canopy);border:1px solid rgba(201,168,76,.15);display:flex;align-items:center;justify-content:center;overflow:hidden">
+          <img id="detailPhoto" src="" alt="" style="width:100%;height:100%;object-fit:cover"/>
+          <div style="position:absolute;bottom:1rem;left:50%;transform:translateX(-50%);display:flex;gap:.5rem" id="photoDots"></div>
+        </div>
+        <button type="button" id="prevPhotoBtn" style="position:absolute;left:1rem;top:50%;transform:translateY(-50%);background:rgba(201,168,76,.2);border:none;color:var(--gold);padding:.5rem .8rem;cursor:pointer;font-size:1.2rem" onclick="prevPhoto()">‹</button>
+        <button type="button" id="nextPhotoBtn" style="position:absolute;right:1rem;top:50%;transform:translateY(-50%);background:rgba(201,168,76,.2);border:none;color:var(--gold);padding:.5rem .8rem;cursor:pointer;font-size:1.2rem" onclick="nextPhoto()">›</button>
+      </div>
+      
+      <h2 id="detailTitle" style="font-family:'Great Vibes',cursive;font-size:2rem;color:var(--ivory);margin-bottom:.5rem"></h2>
+      <p id="detailLister" style="font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--mist);margin-bottom:1.5rem"></p>
+      
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem;padding:1rem;background:rgba(201,168,76,.05);border:1px solid rgba(201,168,76,.1)">
+        <div><p style="font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold)">Size</p><p id="detailSize" style="font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--ivory)"></p></div>
+        <div><p style="font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold)">Condition</p><p id="detailCondition" style="font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--ivory)"></p></div>
+        <div><p style="font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold)">Occasion</p><p id="detailOccasion" style="font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--ivory)"></p></div>
+        <div><p style="font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold)">Price/Night</p><p id="detailPrice" style="font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--ember)"></p></div>
+      </div>
+      
+      <p id="detailDesc" style="font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--mist);line-height:1.7;margin-bottom:2rem"></p>
+      
+      <button type="button" class="modal-submit" onclick="goToWantThis()" style="width:100%">I Want This ✦</button>
+    </div>
+  </div>
+</div>
+
+<!-- RENTER AUTH MODAL -->
+<div class="modal-overlay" id="renterAuthOverlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeRenterAuthModal()">&#10005;</button>
+
+    <p class="modal-eyebrow">Almost There</p>
+    <h3 class="modal-title">Create Your Account</h3>
+    <p class="modal-sub">Browsing is open to all. To book a piece we need to know who has it and how to reach you.</p>
+
+    <div class="renter-auth-toggle">
+      <button type="button" class="renter-auth-toggle-btn active" onclick="showRenterForm('signup', this)">Sign Up</button>
+      <button type="button" class="renter-auth-toggle-btn" onclick="showRenterForm('login', this)">Sign In</button>
+    </div>
+
+    <form class="renter-auth-form active" id="renterSignupForm" onsubmit="handleRenterSignup(event)">
+      <div class="modal-field">
+        <label class="modal-label">Full Name *</label>
+        <input type="text" class="modal-input" id="renter_signup_name" placeholder="Full name" required/>
+      </div>
+      <div class="modal-field">
+        <label class="modal-label">Email *</label>
+        <input type="email" class="modal-input" id="renter_signup_email" placeholder="your@email.com" required/>
+      </div>
+      <div class="modal-field">
+        <label class="modal-label">Password *</label>
+        <input type="password" class="modal-input" id="renter_signup_password" placeholder="At least 8 characters" required/>
+      </div>
+      <div class="modal-field">
+        <label class="modal-label">Phone</label>
+        <input type="tel" class="modal-input" id="renter_signup_phone" placeholder="(617) 000-0000"/>
+      </div>
+      <button type="submit" class="modal-submit">Create Account &#10022;</button>
+      <div class="renter-auth-err" id="renterSignupError"></div>
+    </form>
+
+    <form class="renter-auth-form" id="renterLoginForm" onsubmit="handleRenterLogin(event)">
+      <div class="modal-field">
+        <label class="modal-label">Email *</label>
+        <input type="email" class="modal-input" id="renter_login_email" placeholder="your@email.com" required/>
+      </div>
+      <div class="modal-field">
+        <label class="modal-label">Password *</label>
+        <input type="password" class="modal-input" id="renter_login_password" placeholder="Your password" required/>
+      </div>
+      <button type="submit" class="modal-submit">Sign In &#10022;</button>
+      <div class="renter-auth-err" id="renterLoginError"></div>
+    </form>
+  </div>
+</div>
 
 <!-- LISTING DETAIL MODAL -->
 <div class="modal-overlay" id="detailOverlay" onclick="closeDetailModal(event)">
