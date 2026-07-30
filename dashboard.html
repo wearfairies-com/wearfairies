@@ -80,7 +80,7 @@
         
         <div class="stat-box">
           <div class="stat-num" id="totalEarnings">$0</div>
-          <div class="stat-label">Total Earned (40%)</div>
+          <div class="stat-label">Total Earned</div>
         </div>
 
         <div class="stat-box">
@@ -101,6 +101,17 @@
           <p class="stripe-status disconnected" id="stripeStatus">✕ Not Connected</p>
           <p style="font-family:'Cormorant Garamond',serif;font-size:.9rem;font-style:italic;color:var(--ghost);margin-bottom:1rem">Connect your Stripe account to receive your payouts. You earn 40% of every rental, released once the piece has been delivered to the renter.</p>
           <button class="btn btn-primary" onclick="connectStripe()" id="stripeBtn">Connect Stripe ✦</button>
+        </div>
+      </div>
+
+      <div class="section" style="margin-top:2rem;display:none" id="circleSection">
+        <h2 class="section-title">The Circle</h2>
+        <div class="stripe-box" style="background:rgba(201,168,76,.06);border-color:rgba(201,168,76,.25)">
+          <p style="font-family:'Cormorant Garamond',serif;font-size:.95rem;font-style:italic;color:var(--mist);margin-bottom:1rem;line-height:1.7">
+            Post your night. Ask the room what to wear. See new pieces before
+            they reach the wardrobe. Nobody's selling you anything in there.
+          </p>
+          <a class="btn btn-primary" id="circleBtn" href="#" target="_blank" rel="noopener">Join the Circle ✦</a>
         </div>
       </div>
     </div>
@@ -149,6 +160,18 @@
 
     // Load listings
     loadListings();
+
+    // The Circle — only shown if an invite link is configured, so this
+    // never renders a dead button.
+    fetch('/api/circle-welcome')
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if(d && d.invite){
+          document.getElementById('circleBtn').href = d.invite;
+          document.getElementById('circleSection').style.display = 'block';
+        }
+      })
+      .catch(function(){});
   });
 
   async function loadListings(){
