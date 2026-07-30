@@ -198,6 +198,22 @@
 
       if(profileRes.error) throw profileRes.error;
 
+      // Fire the circle welcome email. Fire-and-forget: signup never
+      // waits on it and never fails because of it.
+      try {
+        var sess = await db.auth.getSession();
+        if(sess.data && sess.data.session){
+          fetch('/api/circle-welcome', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + sess.data.session.access_token
+            },
+            body: JSON.stringify({ name: name })
+          }).catch(function(){});
+        }
+      } catch(e){}
+
       document.getElementById('signupSuccess').classList.add('show');
       setTimeout(() => {
         window.location.href = afterAuthDest();
