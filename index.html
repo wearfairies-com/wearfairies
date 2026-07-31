@@ -417,6 +417,30 @@
     Nobody's selling you anything in there. It's just somewhere to be fashionably free.
   </p>
 
+  <a href="#" id="homeCircleBtn" target="_blank" rel="noopener"
+     style="display:none;font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;
+            color:var(--void);background:linear-gradient(135deg,var(--gold) 0%,var(--ember) 50%,var(--gold) 100%);
+            background-size:220% 100%;padding:1rem 2.2rem;text-decoration:none;border-radius:2px;
+            box-shadow:0 4px 24px rgba(201,168,76,.28);margin-bottom:2.5rem;transition:background-position .3s"
+     onmouseover="this.style.backgroundPosition='100% 0'" onmouseout="this.style.backgroundPosition='0 0'">
+    Join the Circle ✦
+  </a>
+  <script>
+    // No account needed to join the room — the homepage is the widest
+    // door. Hidden by default so it can never render as a dead link
+    // before the Discord invite is configured in Vercel.
+    fetch('/api/circle-welcome')
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if(d && d.invite){
+          var btn = document.getElementById('homeCircleBtn');
+          btn.href = d.invite;
+          btn.style.display = 'inline-block';
+        }
+      })
+      .catch(function(){});
+  </script>
+
   <h2 class="sec-title">Built on trust.<br>Run with care.</h2>
   <div class="promise-grid">
     <div class="pcard rv"><span class="pcard-icon">🔒</span><p class="pcard-title">Discreet</p><p class="pcard-text">Your data, rentals and listings stay private. Always.</p></div>
