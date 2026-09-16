@@ -8,6 +8,70 @@
   <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Cinzel:wght@400;500;600&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet"/>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    /* ══════════════════════════════════════════════════════════════
+       VINTAGE CORNER ORNAMENTS
+
+       Four hand-drawn flourishes, one per screen corner, fixed in
+       place so every page of the site feels like the same considered
+       object as you scroll.
+
+       Design decisions worth recording:
+
+       • Corner pieces only, no connecting border. A full frame reads
+         like a certificate — formal, boxed-in, static. Corners alone
+         read like a letterpress book plate: the eye completes the
+         frame itself, which is more confident and doesn't cage the
+         content.
+
+       • Drawn as SVG paths with asymmetric curves, not CSS borders or
+         geometric shapes. A real engraved corner has a thick-to-thin
+         stroke and an off-centre curl — perfectly symmetrical shapes
+         are the giveaway that something was generated rather than
+         drawn.
+
+       • z-index 600 — above page content, deliberately *below* the
+         nav (700) so a flourish can never overlap the logo or menu,
+         and below the cursor layer (9998+).
+
+       • pointer-events:none throughout, so they can never intercept
+         a click meant for something underneath.
+
+       • Hidden under 700px wide. On a phone the screen edge is
+         already tight; ornament there crowds the content instead of
+         framing it. Better absent than cramped.
+
+       • Opacity is low (.28) on purpose. This should register as
+         "this site has been art-directed" on a second look, not
+         announce itself on the first.
+    ═══════════════════════════════════════════════════════════════ */
+
+    .corner-orn{
+      position:fixed;
+      width:104px;height:104px;
+      z-index:600;
+      pointer-events:none;
+      opacity:.28;
+    }
+    .corner-orn svg{width:100%;height:100%;display:block}
+    .corner-orn path{
+      fill:none;
+      stroke:var(--gold);
+      stroke-width:1.1;
+      stroke-linecap:round;
+    }
+    .corner-orn.tl{top:18px;left:18px}
+    .corner-orn.tr{top:18px;right:18px;transform:scaleX(-1)}
+    .corner-orn.bl{bottom:18px;left:18px;transform:scaleY(-1)}
+    .corner-orn.br{bottom:18px;right:18px;transform:scale(-1,-1)}
+
+    /* The top corners sit in the same band as the fixed nav. Nudge
+       them down so they frame the page, not the header. */
+    .corner-orn.tl,.corner-orn.tr{top:76px}
+
+    @media(max-width:700px){
+      .corner-orn{display:none}
+    }
+
 
     /* ══════════════════════════════════════════════════════════════
        EDITORIAL FRAME + LACE-GHOST SYSTEM
@@ -370,6 +434,75 @@
   </script>
 </head>
 <body>
+
+<!-- Vintage corner ornaments — see the .corner-orn block in <style>.
+     One SVG, rotated/mirrored by CSS into all four corners, so the
+     drawing only has to exist once. -->
+<div class="corner-orn tl" aria-hidden="true">
+  <svg viewBox="0 0 104 104" xmlns="http://www.w3.org/2000/svg">
+    <!-- long sweep down the left, tapering -->
+    <path d="M6 96 C6 52, 10 22, 30 8"/>
+    <!-- long sweep along the top, mirroring it -->
+    <path d="M96 6 C52 6, 22 10, 8 30"/>
+    <!-- inner echo line, shorter, creates the double-rule depth -->
+    <path d="M14 78 C14 46, 18 26, 34 16" opacity=".55"/>
+    <path d="M78 14 C46 14, 26 18, 16 34" opacity=".55"/>
+    <!-- the curl: asymmetric on purpose, an engraved corner never
+         resolves into a perfect circle -->
+    <path d="M30 8 C40 2, 50 6, 48 14 C46 21, 36 22, 34 16"/>
+    <path d="M8 30 C2 40, 6 50, 14 48 C21 46, 22 36, 16 34"/>
+    <!-- small leaf, the hand-drawn detail that stops it reading as
+         generated geometry -->
+    <path d="M24 24 C30 18, 38 20, 40 26 C34 32, 26 30, 24 24"/>
+    <!-- three diminishing dots trailing off along the diagonal -->
+    <path d="M52 52 L52.6 52" stroke-width="2.4" opacity=".9"/>
+    <path d="M62 62 L62.5 62" stroke-width="1.9" opacity=".65"/>
+    <path d="M71 71 L71.4 71" stroke-width="1.5" opacity=".4"/>
+  </svg>
+</div>
+<div class="corner-orn tr" aria-hidden="true">
+  <svg viewBox="0 0 104 104" xmlns="http://www.w3.org/2000/svg">
+    <path d="M6 96 C6 52, 10 22, 30 8"/>
+    <path d="M96 6 C52 6, 22 10, 8 30"/>
+    <path d="M14 78 C14 46, 18 26, 34 16" opacity=".55"/>
+    <path d="M78 14 C46 14, 26 18, 16 34" opacity=".55"/>
+    <path d="M30 8 C40 2, 50 6, 48 14 C46 21, 36 22, 34 16"/>
+    <path d="M8 30 C2 40, 6 50, 14 48 C21 46, 22 36, 16 34"/>
+    <path d="M24 24 C30 18, 38 20, 40 26 C34 32, 26 30, 24 24"/>
+    <path d="M52 52 L52.6 52" stroke-width="2.4" opacity=".9"/>
+    <path d="M62 62 L62.5 62" stroke-width="1.9" opacity=".65"/>
+    <path d="M71 71 L71.4 71" stroke-width="1.5" opacity=".4"/>
+  </svg>
+</div>
+<div class="corner-orn bl" aria-hidden="true">
+  <svg viewBox="0 0 104 104" xmlns="http://www.w3.org/2000/svg">
+    <path d="M6 96 C6 52, 10 22, 30 8"/>
+    <path d="M96 6 C52 6, 22 10, 8 30"/>
+    <path d="M14 78 C14 46, 18 26, 34 16" opacity=".55"/>
+    <path d="M78 14 C46 14, 26 18, 16 34" opacity=".55"/>
+    <path d="M30 8 C40 2, 50 6, 48 14 C46 21, 36 22, 34 16"/>
+    <path d="M8 30 C2 40, 6 50, 14 48 C21 46, 22 36, 16 34"/>
+    <path d="M24 24 C30 18, 38 20, 40 26 C34 32, 26 30, 24 24"/>
+    <path d="M52 52 L52.6 52" stroke-width="2.4" opacity=".9"/>
+    <path d="M62 62 L62.5 62" stroke-width="1.9" opacity=".65"/>
+    <path d="M71 71 L71.4 71" stroke-width="1.5" opacity=".4"/>
+  </svg>
+</div>
+<div class="corner-orn br" aria-hidden="true">
+  <svg viewBox="0 0 104 104" xmlns="http://www.w3.org/2000/svg">
+    <path d="M6 96 C6 52, 10 22, 30 8"/>
+    <path d="M96 6 C52 6, 22 10, 8 30"/>
+    <path d="M14 78 C14 46, 18 26, 34 16" opacity=".55"/>
+    <path d="M78 14 C46 14, 26 18, 16 34" opacity=".55"/>
+    <path d="M30 8 C40 2, 50 6, 48 14 C46 21, 36 22, 34 16"/>
+    <path d="M8 30 C2 40, 6 50, 14 48 C21 46, 22 36, 16 34"/>
+    <path d="M24 24 C30 18, 38 20, 40 26 C34 32, 26 30, 24 24"/>
+    <path d="M52 52 L52.6 52" stroke-width="2.4" opacity=".9"/>
+    <path d="M62 62 L62.5 62" stroke-width="1.9" opacity=".65"/>
+    <path d="M71 71 L71.4 71" stroke-width="1.5" opacity=".4"/>
+  </svg>
+</div>
+
 
 <!-- FAIRY CURSOR -->
 <canvas id="cursorTrail"></canvas>
