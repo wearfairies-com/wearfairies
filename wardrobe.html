@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <link rel="icon" type="image/png" href="logo_icon.png"/>
-  <title>Browse the Wardrobe — Fairies</title>
+  <title>Browse the Wardrobe — WearFairies</title>
   <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Cinzel:wght@400;500;600&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet"/>
   <script src="https://js.stripe.com/v3/"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
@@ -203,7 +203,7 @@
 <nav>
   <a href="index.html" class="logo-wrap">
     <img src="logo_icon.png" class="nav-logo-icon" alt="Fairies" onerror="this.style.display='none'"/>
-    <span class="nav-logo-text">Fairies</span>
+    <span class="nav-logo-text">WearFairies</span>
   </a>
   <ul class="nav-links">
     <li><a href="wardrobe.html" class="active">Browse</a></li>
@@ -251,7 +251,7 @@
 </div>
 
 <footer>
-  <div class="foot-logo">Fairies</div>
+  <div class="foot-logo">WearFairies</div>
   <ul class="foot-links">
     <li><a href="index.html">Home</a></li>
     <li><a href="list.html">List a Piece</a></li>
@@ -289,6 +289,7 @@
       </div>
       
       <p id="detailDesc" style="font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--mist);line-height:1.7;margin-bottom:2rem"></p>
+      <p id="detailStory" style="display:none;font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--ember);line-height:1.8;margin-bottom:2rem;padding-left:1rem;border-left:1px solid rgba(201,168,76,.25)"></p>
       
       <button type="button" class="modal-submit" onclick="goToWantThis()" style="width:100%">I Want This ✦</button>
     </div>
@@ -345,42 +346,11 @@
   </div>
 </div>
 
-<!-- LISTING DETAIL MODAL -->
-<div class="modal-overlay" id="detailOverlay" onclick="closeDetailModal(event)">
-  <div class="modal" style="max-width:600px">
-    <button class="modal-close" onclick="closeDetailModal()">✕</button>
-    
-    <div id="detailContent">
-      <div style="position:relative;margin-bottom:2rem">
-        <div id="photoCarousel" style="position:relative;width:100%;aspect-ratio:1;background:var(--canopy);border:1px solid rgba(201,168,76,.15);display:flex;align-items:center;justify-content:center;overflow:hidden">
-          <img id="detailPhoto" src="" alt="" style="width:100%;height:100%;object-fit:cover"/>
-          <div style="position:absolute;bottom:1rem;left:50%;transform:translateX(-50%);display:flex;gap:.5rem" id="photoDots"></div>
-        </div>
-        <button type="button" id="prevPhotoBtn" style="position:absolute;left:1rem;top:50%;transform:translateY(-50%);background:rgba(201,168,76,.2);border:none;color:var(--gold);padding:.5rem .8rem;cursor:pointer;font-size:1.2rem" onclick="prevPhoto()">‹</button>
-        <button type="button" id="nextPhotoBtn" style="position:absolute;right:1rem;top:50%;transform:translateY(-50%);background:rgba(201,168,76,.2);border:none;color:var(--gold);padding:.5rem .8rem;cursor:pointer;font-size:1.2rem" onclick="nextPhoto()">›</button>
-      </div>
-      
-      <h2 id="detailTitle" style="font-family:'Great Vibes',cursive;font-size:2rem;color:var(--ivory);margin-bottom:.5rem"></h2>
-      <p id="detailLister" style="font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--mist);margin-bottom:1.5rem"></p>
-      
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem;padding:1rem;background:rgba(201,168,76,.05);border:1px solid rgba(201,168,76,.1)">
-        <div><p style="font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold)">Size</p><p id="detailSize" style="font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--ivory)"></p></div>
-        <div><p style="font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold)">Condition</p><p id="detailCondition" style="font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--ivory)"></p></div>
-        <div><p style="font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold)">Occasion</p><p id="detailOccasion" style="font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--ivory)"></p></div>
-        <div><p style="font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold)">Price/Night</p><p id="detailPrice" style="font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--ember)"></p></div>
-      </div>
-      
-      <p id="detailDesc" style="font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--mist);line-height:1.7;margin-bottom:2rem"></p>
-      
-      <button type="button" class="modal-submit" onclick="goToWantThis()" style="width:100%">I Want This ✦</button>
-    </div>
-  </div>
-</div>
 
 <!-- RENTER AUTH MODAL -->
 <div id="renterAuthOverlay" class="modal-overlay">
   <div class="renter-auth-card">
-    <p class="renter-auth-title">Fairies</p>
+    <p class="renter-auth-title">WearFairies</p>
     
     <div class="renter-auth-toggle">
       <button class="renter-auth-toggle-btn active" onclick="showRenterForm('signup')">Sign Up</button>
@@ -595,7 +565,7 @@ async function loadListings(){
       // phone and email stay out — the page never displayed them, but
       // '*' was shipping them anyway. lender_stripe_id stays because
       // the booking needs it, and it's an account reference, not a secret.
-      .select('id, created_at, title, description, occasion, category, size, condition, price_per_night, tags, lister_name, neighbourhood, city, image_url, status, availability, lender_stripe_id')
+      .select('id, created_at, title, description, occasion, category, size, condition, price_per_night, tags, lister_name, neighbourhood, city, image_url, status, availability, lender_stripe_id, piece_name, piece_story')
       .eq('status', 'approved')
       .order('created_at', {ascending: false});
 
@@ -1015,13 +985,23 @@ function openListingDetail(id){
   if(l.photos && Array.isArray(l.photos)) listingPhotos = listingPhotos.concat(l.photos);
   if(listingPhotos.length === 0) listingPhotos.push(''); // placeholder
   
-  document.getElementById('detailTitle').textContent = l.title;
+  document.getElementById('detailTitle').textContent = l.piece_name ? (l.piece_name + ' — ' + l.title) : l.title;
   document.getElementById('detailLister').textContent = 'Listed by ' + l.lister_name;
   document.getElementById('detailSize').textContent = l.size || '—';
   document.getElementById('detailCondition').textContent = l.condition || '—';
   document.getElementById('detailOccasion').textContent = l.occasion || '—';
   document.getElementById('detailPrice').textContent = '$' + (l.price_per_night || '—') + ' / night';
   document.getElementById('detailDesc').textContent = l.description || 'No description provided.';
+
+  // Its story so far — only shown if the lender wrote one. Every piece has
+  // a life; not every listing has to say so.
+  var storyEl = document.getElementById('detailStory');
+  if(l.piece_story){
+    storyEl.textContent = '"' + l.piece_story + '"';
+    storyEl.style.display = 'block';
+  } else {
+    storyEl.style.display = 'none';
+  }
   
   showPhoto(0);
   

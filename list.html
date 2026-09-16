@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <link rel="icon" type="image/png" href="logo_icon.png"/>
-  <title>Get Started — Fairies</title>
+  <title>Get Started — WearFairies</title>
   <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Cinzel:wght@400;500;600&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet"/>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-VPM2FPG2DW"></script>
@@ -101,7 +101,7 @@
 <nav>
   <a href="index.html" class="logo-wrap">
     <img src="logo_icon.png" class="nav-logo-icon" alt="Fairies" onerror="this.style.display='none'"/>
-    <span class="nav-logo-text">Fairies</span>
+    <span class="nav-logo-text">WearFairies</span>
   </a>
   <ul class="nav-links">
     <li><a href="wardrobe.html">Browse</a></li>
@@ -231,7 +231,9 @@
             <option value="dress">Dress</option>
             <option value="shoes">Shoes</option>
             <option value="accessory">Accessory</option>
+            <option value="other">Other &mdash; I'll describe it</option>
           </select>
+          <input type="text" id="l_category_other" class="form-input" placeholder="What kind of piece is it?" style="display:none;margin-top:.8rem"/>
         </div>
         <div class="form-group">
           <label class="form-label">Occasion <span class="req">*</span></label>
@@ -258,11 +260,26 @@
             <option>Worn once, like new</option>
             <option>Worn a few times, excellent condition</option>
             <option>Good condition, minor wear</option>
+            <option value="other">Other &mdash; I'll describe it</option>
           </select>
+          <input type="text" id="l_condition_other" class="form-input" placeholder="Describe the condition" style="display:none;margin-top:.8rem"/>
         </div>
         <div class="form-group"><label class="form-label">Asking Price Per Night ($)</label><input type="number" id="l_price" class="form-input" placeholder="e.g. 35" min="1"/></div>
       </div>
       <div class="form-row single"><div class="form-group"><label class="form-label">Describe Your Piece</label><textarea id="l_desc" class="form-textarea" placeholder="Colour, fabric, how it fits, any special details..."></textarea></div></div>
+
+      <div class="form-row single">
+        <div class="form-group">
+          <label class="form-label">Give Your Piece a Name <span style="color:var(--ghost);font-style:italic;text-transform:none;letter-spacing:0">&mdash; optional, every piece has a story</span></label>
+          <input type="text" id="l_name" class="form-input" placeholder="e.g. Hazel"/>
+        </div>
+      </div>
+      <div class="form-row single">
+        <div class="form-group">
+          <label class="form-label">Its Story So Far <span style="color:var(--ghost);font-style:italic;text-transform:none;letter-spacing:0">&mdash; optional</span></label>
+          <textarea id="l_story" class="form-textarea" placeholder="Where has it been? A graduation, a birthday, a night you loved..."></textarea>
+        </div>
+      </div>
 
       <div class="g-rule"><div class="g-rule-line"></div><div class="g-rule-gem"></div><div class="g-rule-line"></div></div>
       <span class="form-section-label">Upload Photos</span>
@@ -276,6 +293,23 @@
         </div>
       </div>
       <div class="photo-previews" id="photoPreviews"></div>
+
+      <div class="g-rule"><div class="g-rule-line"></div><div class="g-rule-gem"></div><div class="g-rule-line"></div></div>
+      <span class="form-section-label">Condition Photos &mdash; Optional</span>
+      <p style="font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--ghost);text-align:center;margin-bottom:2rem">
+        Close-ups of the piece as it is today &mdash; a mark, a loose thread, the hem.
+        Not for show. This is your record of how it left you, and your evidence
+        if it comes back different. Skip it if you'd rather.
+      </p>
+      <div class="photo-upload-area" id="condUploadArea">
+        <input type="file" id="condInput" accept="image/*" multiple onchange="handleCondPhotos(this)" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%"/>
+        <div id="condUploadInner">
+          <span class="upload-glyph">✦</span>
+          <p class="upload-main">Tap to add condition photos</p>
+          <p class="upload-sub">Optional &middot; up to 5</p>
+        </div>
+      </div>
+      <div class="photo-previews" id="condPreviews"></div>
 
       <button type="submit" class="submit-btn">Submit Your Listing ✦</button>
       <p class="form-note">We review every listing before it goes live. You will hear from us within 24 hours.</p>
@@ -385,7 +419,7 @@
 </section>
 
 <footer>
-  <div class="foot-logo">Fairies</div>
+  <div class="foot-logo">WearFairies</div>
   <ul class="foot-links">
     <li><a href="index.html">Home</a></li>
     <li><a href="wardrobe.html">Browse</a></li>
@@ -426,6 +460,28 @@
       // warning — they fight over the same stored session.
       var db = window.gate || window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
+
+      // If someone picked "Other", use what they typed instead.
+      function pickValue(id){
+        var sel = document.getElementById(id);
+        if(sel.value !== 'other') return sel.value;
+        var box = document.getElementById(id + '_other');
+        return (box && box.value.trim()) || 'Other';
+      }
+
+  // Show the write-in box when someone picks "Other".
+  ['category','condition'].forEach(function(f){
+    var sel = document.getElementById('l_' + f);
+    var box = document.getElementById('l_' + f + '_other');
+    if(!sel || !box) return;
+    sel.addEventListener('change', function(){
+      var isOther = sel.value === 'other';
+      box.style.display = isOther ? 'block' : 'none';
+      box.required = isOther;
+      if(isOther) box.focus();
+    });
+  });
+
       // Tabs
       window.switchTab = function(tab) {
         document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
@@ -440,6 +496,52 @@
       if(window.location.hash==='#lend') window.switchTab('lend');
 
       // Photo upload
+      // ---- Condition photos (optional) ----
+      // The lender's own record of how the piece looked when it left them.
+      // Kept separate from the listing gallery — these are evidence, not
+      // marketing, and they never appear on the wardrobe.
+      var condPhotos = [];
+      window.handleCondPhotos = function(input) {
+        var files = Array.from(input.files);
+        var remaining = 5 - condPhotos.length;
+        files.slice(0, remaining).forEach(function(file) {
+          if(!file.type.startsWith('image/')) return;
+          var reader = new FileReader();
+          reader.onload = function(e) {
+            condPhotos.push({file: file, url: e.target.result});
+            renderCondPreviews();
+            haptic([8,20,8]);
+          };
+          reader.readAsDataURL(file);
+        });
+        input.value = '';
+      };
+
+      function renderCondPreviews(){
+        var wrap = document.getElementById('condPreviews');
+        var main = document.querySelector('#condUploadInner .upload-main');
+        var sub  = document.querySelector('#condUploadInner .upload-sub');
+        wrap.innerHTML = '';
+        condPhotos.forEach(function(p, i){
+          var d = document.createElement('div');
+          d.className = 'photo-preview';
+          d.innerHTML = '<img src="' + p.url + '" alt=""/>';
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'photo-remove';
+          btn.textContent = '\u2715';
+          btn.onclick = function(){ condPhotos.splice(i,1); renderCondPreviews(); haptic([5]); };
+          d.appendChild(btn);
+          wrap.appendChild(d);
+        });
+        if(main) main.textContent = condPhotos.length
+          ? condPhotos.length + ' of 5 condition photos'
+          : 'Tap to add condition photos';
+        if(sub) sub.textContent = condPhotos.length >= 5
+          ? 'Maximum reached'
+          : 'Optional \u00b7 up to 5';
+      }
+
       var selectedPhotos = [];
       window.handlePhotos = function(input) {
         var files = Array.from(input.files);
@@ -491,10 +593,15 @@
         var listingData = {
           title: document.getElementById('l_title').value.trim(),
           description: document.getElementById('l_desc').value.trim(),
+          // Optional — left null rather than an empty string when skipped,
+          // so a wardrobe card can tell "no name given" apart from "named
+          // and it's blank."
+          piece_name: document.getElementById('l_name').value.trim() || null,
+          piece_story: document.getElementById('l_story').value.trim() || null,
           occasion: document.getElementById('l_occasion').value,
-          category: document.getElementById('l_category').value,
+          category: pickValue('l_category'),
           size: document.getElementById('l_size').value.trim(),
-          condition: document.getElementById('l_condition').value,
+          condition: pickValue('l_condition'),
           price_per_night: parseFloat(document.getElementById('l_price').value) || null,
           original_price: parseFloat(document.getElementById('l_original_price').value) || null,
           lister_name: (document.getElementById('l_first').value + ' ' + document.getElementById('l_last').value).trim(),
@@ -532,6 +639,25 @@
 
         // Add image URL to listing data
         listingData.image_url = imageUrl;
+
+        // Condition photos — optional, so a failure here must never block
+        // the listing. Stored in the same bucket, under a cond- prefix.
+        if(condPhotos.length > 0) {
+          var condUrls = [];
+          for(var ci = 0; ci < condPhotos.length; ci++) {
+            try {
+              var cf = condPhotos[ci].file;
+              var cext = cf.name.split('.').pop();
+              var cname = 'cond-' + Date.now() + '-' + ci + '.' + cext;
+              var cup = await db.storage.from('listings')
+                .upload(cname, cf, { cacheControl: '3600', upsert: false });
+              if(!cup.error) {
+                condUrls.push(db.storage.from('listings').getPublicUrl(cname).data.publicUrl);
+              }
+            } catch(ce) { console.error('condition photo failed:', ce); }
+          }
+          if(condUrls.length) listingData.condition_photos = condUrls;
+        }
 
         // Insert to Supabase
         var result = await db.from('listings').insert([listingData]);
