@@ -8,133 +8,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Cinzel:wght@400;500;600&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet"/>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    /* ══════════════════════════════════════════════════════════════
-       VINTAGE CORNER ORNAMENTS
-
-       Four hand-drawn flourishes, one per screen corner, fixed in
-       place so every page of the site feels like the same considered
-       object as you scroll.
-
-       Design decisions worth recording:
-
-       • Corner pieces only, no connecting border. A full frame reads
-         like a certificate — formal, boxed-in, static. Corners alone
-         read like a letterpress book plate: the eye completes the
-         frame itself, which is more confident and doesn't cage the
-         content.
-
-       • Drawn as SVG paths with asymmetric curves, not CSS borders or
-         geometric shapes. A real engraved corner has a thick-to-thin
-         stroke and an off-centre curl — perfectly symmetrical shapes
-         are the giveaway that something was generated rather than
-         drawn.
-
-       • z-index 600 — above page content, deliberately *below* the
-         nav (700) so a flourish can never overlap the logo or menu,
-         and below the cursor layer (9998+).
-
-       • pointer-events:none throughout, so they can never intercept
-         a click meant for something underneath.
-
-       • Hidden under 700px wide. On a phone the screen edge is
-         already tight; ornament there crowds the content instead of
-         framing it. Better absent than cramped.
-
-       • Opacity is low (.28) on purpose. This should register as
-         "this site has been art-directed" on a second look, not
-         announce itself on the first.
-    ═══════════════════════════════════════════════════════════════ */
-
-    .corner-orn{
-      position:fixed;
-      width:104px;height:104px;
-      z-index:600;
-      pointer-events:none;
-      opacity:.28;
-    }
-    .corner-orn svg{width:100%;height:100%;display:block}
-    .corner-orn path{
-      fill:none;
-      stroke:var(--gold);
-      stroke-width:1.1;
-      stroke-linecap:round;
-    }
-    .corner-orn.tl{top:18px;left:18px}
-    .corner-orn.tr{top:18px;right:18px;transform:scaleX(-1)}
-    .corner-orn.bl{bottom:18px;left:18px;transform:scaleY(-1)}
-    .corner-orn.br{bottom:18px;right:18px;transform:scale(-1,-1)}
-
-    /* The top corners sit in the same band as the fixed nav. Nudge
-       them down so they frame the page, not the header. */
-    .corner-orn.tl,.corner-orn.tr{top:76px}
-
-    @media(max-width:700px){
-      .corner-orn{display:none}
-    }
-
-
-    /* ══════════════════════════════════════════════════════════════
-       EDITORIAL FRAME + LACE-GHOST SYSTEM
-
-       Two new visual ideas, deliberately kept apart from the existing
-       gold-glow language (fireflies, button shadows, hover blur).
-       Glow means magic on this site already — if the frame glowed
-       too, glow would stop meaning anything. A frame is the opposite
-       idea: containment, not radiance. Crisp double hairline, the way
-       an old fashion plate or magazine border actually looks — no
-       blur, no shadow on the lines themselves.
-
-       Lace is a texture, not a doily. It sits at 3% opacity so it
-       reads as "paper with history" on close look, and is invisible
-       at normal scroll distance — the point is a warm, cozy floor
-       under the content, never a pattern loud enough to compete with
-       type or photos.
-    ═══════════════════════════════════════════════════════════════ */
-
-    .vint-frame{
-      position:relative;
-      padding:14px;
-    }
-    .vint-frame::before,.vint-frame::after{
-      content:'';position:absolute;inset:0;pointer-events:none;
-    }
-    .vint-frame::before{
-      border:1px solid rgba(201,168,76,.22);
-    }
-    .vint-frame::after{
-      inset:6px;
-      border:1px solid rgba(201,168,76,.45);
-    }
-    /* Small corner flourishes — a curl at each inner corner, the kind
-       of hand-drawn detail a printed fashion plate border would have.
-       Purely decorative, so they're skipped for anyone who's asked
-       their system to reduce motion/detail. */
-    @media (prefers-reduced-motion: no-preference){
-      .vint-frame-corners::before{
-        content:'';position:absolute;inset:6px;pointer-events:none;
-        background-image:
-          radial-gradient(circle at 0 0, transparent 7px, rgba(201,168,76,.35) 7px, rgba(201,168,76,.35) 7.6px, transparent 7.6px),
-          radial-gradient(circle at 100% 0, transparent 7px, rgba(201,168,76,.35) 7px, rgba(201,168,76,.35) 7.6px, transparent 7.6px),
-          radial-gradient(circle at 0 100%, transparent 7px, rgba(201,168,76,.35) 7px, rgba(201,168,76,.35) 7.6px, transparent 7.6px),
-          radial-gradient(circle at 100% 100%, transparent 7px, rgba(201,168,76,.35) 7px, rgba(201,168,76,.35) 7.6px, transparent 7.6px);
-        background-repeat:no-repeat;
-        background-size:16px 16px;
-        background-position:top left,top right,bottom left,bottom right;
-      }
-    }
-
-    /* Lace-ghost — an SVG lace/damask motif, tiled, at near-zero
-       opacity against the dark green. Data-URI so it needs no extra
-       request and can't fail to load. */
-    .lace-ghost{position:relative}
-    .lace-ghost::before{
-      content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
-      opacity:.035;
-      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cg fill='none' stroke='%23F2EAD6' stroke-width='1'%3E%3Ccircle cx='20' cy='20' r='9'/%3E%3Ccircle cx='60' cy='20' r='9'/%3E%3Ccircle cx='100' cy='20' r='9'/%3E%3Ccircle cx='40' cy='50' r='9'/%3E%3Ccircle cx='80' cy='50' r='9'/%3E%3Ccircle cx='20' cy='80' r='9'/%3E%3Ccircle cx='60' cy='80' r='9'/%3E%3Ccircle cx='100' cy='80' r='9'/%3E%3Ccircle cx='40' cy='110' r='9'/%3E%3Ccircle cx='80' cy='110' r='9'/%3E%3Cpath d='M11 20h18M51 20h18M91 20h18M31 50h18M71 50h18M11 80h18M51 80h18M91 80h18M31 110h18M71 110h18' stroke-dasharray='1 3'/%3E%3C/g%3E%3C/svg%3E");
-      background-size:120px 120px;
-    }
-    .lace-ghost > *{position:relative;z-index:1}
-
     :root{
       --void:#020c08;--forest:#071410;--canopy:#0a1e12;--moss:#0f2a18;
       --gold:#c9a84c;--ember:#e2c068;--spark:#f5e199;
@@ -435,75 +308,6 @@
 </head>
 <body>
 
-<!-- Vintage corner ornaments — see the .corner-orn block in <style>.
-     One SVG, rotated/mirrored by CSS into all four corners, so the
-     drawing only has to exist once. -->
-<div class="corner-orn tl" aria-hidden="true">
-  <svg viewBox="0 0 104 104" xmlns="http://www.w3.org/2000/svg">
-    <!-- long sweep down the left, tapering -->
-    <path d="M6 96 C6 52, 10 22, 30 8"/>
-    <!-- long sweep along the top, mirroring it -->
-    <path d="M96 6 C52 6, 22 10, 8 30"/>
-    <!-- inner echo line, shorter, creates the double-rule depth -->
-    <path d="M14 78 C14 46, 18 26, 34 16" opacity=".55"/>
-    <path d="M78 14 C46 14, 26 18, 16 34" opacity=".55"/>
-    <!-- the curl: asymmetric on purpose, an engraved corner never
-         resolves into a perfect circle -->
-    <path d="M30 8 C40 2, 50 6, 48 14 C46 21, 36 22, 34 16"/>
-    <path d="M8 30 C2 40, 6 50, 14 48 C21 46, 22 36, 16 34"/>
-    <!-- small leaf, the hand-drawn detail that stops it reading as
-         generated geometry -->
-    <path d="M24 24 C30 18, 38 20, 40 26 C34 32, 26 30, 24 24"/>
-    <!-- three diminishing dots trailing off along the diagonal -->
-    <path d="M52 52 L52.6 52" stroke-width="2.4" opacity=".9"/>
-    <path d="M62 62 L62.5 62" stroke-width="1.9" opacity=".65"/>
-    <path d="M71 71 L71.4 71" stroke-width="1.5" opacity=".4"/>
-  </svg>
-</div>
-<div class="corner-orn tr" aria-hidden="true">
-  <svg viewBox="0 0 104 104" xmlns="http://www.w3.org/2000/svg">
-    <path d="M6 96 C6 52, 10 22, 30 8"/>
-    <path d="M96 6 C52 6, 22 10, 8 30"/>
-    <path d="M14 78 C14 46, 18 26, 34 16" opacity=".55"/>
-    <path d="M78 14 C46 14, 26 18, 16 34" opacity=".55"/>
-    <path d="M30 8 C40 2, 50 6, 48 14 C46 21, 36 22, 34 16"/>
-    <path d="M8 30 C2 40, 6 50, 14 48 C21 46, 22 36, 16 34"/>
-    <path d="M24 24 C30 18, 38 20, 40 26 C34 32, 26 30, 24 24"/>
-    <path d="M52 52 L52.6 52" stroke-width="2.4" opacity=".9"/>
-    <path d="M62 62 L62.5 62" stroke-width="1.9" opacity=".65"/>
-    <path d="M71 71 L71.4 71" stroke-width="1.5" opacity=".4"/>
-  </svg>
-</div>
-<div class="corner-orn bl" aria-hidden="true">
-  <svg viewBox="0 0 104 104" xmlns="http://www.w3.org/2000/svg">
-    <path d="M6 96 C6 52, 10 22, 30 8"/>
-    <path d="M96 6 C52 6, 22 10, 8 30"/>
-    <path d="M14 78 C14 46, 18 26, 34 16" opacity=".55"/>
-    <path d="M78 14 C46 14, 26 18, 16 34" opacity=".55"/>
-    <path d="M30 8 C40 2, 50 6, 48 14 C46 21, 36 22, 34 16"/>
-    <path d="M8 30 C2 40, 6 50, 14 48 C21 46, 22 36, 16 34"/>
-    <path d="M24 24 C30 18, 38 20, 40 26 C34 32, 26 30, 24 24"/>
-    <path d="M52 52 L52.6 52" stroke-width="2.4" opacity=".9"/>
-    <path d="M62 62 L62.5 62" stroke-width="1.9" opacity=".65"/>
-    <path d="M71 71 L71.4 71" stroke-width="1.5" opacity=".4"/>
-  </svg>
-</div>
-<div class="corner-orn br" aria-hidden="true">
-  <svg viewBox="0 0 104 104" xmlns="http://www.w3.org/2000/svg">
-    <path d="M6 96 C6 52, 10 22, 30 8"/>
-    <path d="M96 6 C52 6, 22 10, 8 30"/>
-    <path d="M14 78 C14 46, 18 26, 34 16" opacity=".55"/>
-    <path d="M78 14 C46 14, 26 18, 16 34" opacity=".55"/>
-    <path d="M30 8 C40 2, 50 6, 48 14 C46 21, 36 22, 34 16"/>
-    <path d="M8 30 C2 40, 6 50, 14 48 C21 46, 22 36, 16 34"/>
-    <path d="M24 24 C30 18, 38 20, 40 26 C34 32, 26 30, 24 24"/>
-    <path d="M52 52 L52.6 52" stroke-width="2.4" opacity=".9"/>
-    <path d="M62 62 L62.5 62" stroke-width="1.9" opacity=".65"/>
-    <path d="M71 71 L71.4 71" stroke-width="1.5" opacity=".4"/>
-  </svg>
-</div>
-
-
 <!-- FAIRY CURSOR -->
 <canvas id="cursorTrail"></canvas>
 <div id="fairyCursor">
@@ -679,7 +483,7 @@
 </section>
 
 <!-- MESSAGE US -->
-<section class="message-section rv lace-ghost" id="message">
+<section class="message-section rv" id="message">
   <div class="message-wrap">
     <div class="message-intro">
       <span class="eyebrow">✦ Get in Touch ✦</span>
@@ -774,7 +578,7 @@
 </section>
 
 <!-- ABOUT -->
-<section class="about rv lace-ghost" id="about">
+<section class="about rv" id="about">
   <div class="about-inner">
     <span class="eyebrow">✦ About Fairies ✦</span>
     <h2 class="sec-title">We started with a simple idea.</h2>
