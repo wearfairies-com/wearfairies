@@ -26,6 +26,30 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-VPM2FPG2DW');</script>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+    /* Editorial frame — see index.html for the full reasoning. Crisp
+       double hairline, no glow, the way a printed fashion plate's
+       border actually looks. Used here on the listing photo, which is
+       the one spot on this page where "framed portrait" is the right
+       feeling — you're looking at a dress the way you'd look at a
+       plate in a magazine. */
+    .vint-frame{position:relative;padding:14px}
+    .vint-frame::before,.vint-frame::after{content:'';position:absolute;inset:0;pointer-events:none}
+    .vint-frame::before{border:1px solid rgba(201,168,76,.22)}
+    .vint-frame::after{inset:6px;border:1px solid rgba(201,168,76,.45)}
+    @media (prefers-reduced-motion: no-preference){
+      .vint-frame-corners::before{
+        content:'';position:absolute;inset:6px;pointer-events:none;
+        background-image:
+          radial-gradient(circle at 0 0, transparent 7px, rgba(201,168,76,.35) 7px, rgba(201,168,76,.35) 7.6px, transparent 7.6px),
+          radial-gradient(circle at 100% 0, transparent 7px, rgba(201,168,76,.35) 7px, rgba(201,168,76,.35) 7.6px, transparent 7.6px),
+          radial-gradient(circle at 0 100%, transparent 7px, rgba(201,168,76,.35) 7px, rgba(201,168,76,.35) 7.6px, transparent 7.6px),
+          radial-gradient(circle at 100% 100%, transparent 7px, rgba(201,168,76,.35) 7px, rgba(201,168,76,.35) 7.6px, transparent 7.6px);
+        background-repeat:no-repeat;background-size:16px 16px;
+        background-position:top left,top right,bottom left,bottom right;
+      }
+    }
+
     :root{
       --void:#020c08;--forest:#071410;--canopy:#0a1e12;--moss:#0f2a18;
       --gold:#c9a84c;--ember:#e2c068;--spark:#f5e199;
@@ -269,7 +293,7 @@
     <button class="modal-close" onclick="closeDetailModal()">✕</button>
     
     <div id="detailContent">
-      <div style="position:relative;margin-bottom:2rem">
+      <div class="vint-frame vint-frame-corners" style="position:relative;margin-bottom:2rem">
         <div id="photoCarousel" style="position:relative;width:100%;aspect-ratio:1;background:var(--canopy);border:1px solid rgba(201,168,76,.15);display:flex;align-items:center;justify-content:center;overflow:hidden">
           <img id="detailPhoto" src="" alt="" style="width:100%;height:100%;object-fit:cover"/>
           <div style="position:absolute;bottom:1rem;left:50%;transform:translateX(-50%);display:flex;gap:.5rem" id="photoDots"></div>
