@@ -30,12 +30,23 @@
     body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23g)' opacity='0.05'/%3E%3C/svg%3E");pointer-events:none;z-index:8000;mix-blend-mode:screen;opacity:.4}
 
     /* ── NAV ── */
-    nav{position:fixed;top:0;left:0;right:0;z-index:700;display:flex;align-items:center;justify-content:space-between;padding:1.4rem 3rem;background:linear-gradient(180deg,rgba(2,12,8,.97) 0%,transparent 100%);transition:background .4s}
+    nav{position:fixed;top:0;left:0;right:0;z-index:700;display:flex;align-items:center;justify-content:space-between;padding:1.9rem 3rem 1.4rem;background:linear-gradient(180deg,rgba(2,12,8,.97) 0%,transparent 100%);transition:background .4s}
     nav.scrolled{background:rgba(2,12,8,.97);backdrop-filter:blur(12px)}
     .logo-wrap{display:flex;align-items:center;gap:.6rem;text-decoration:none}
     .nav-logo-icon{height:46px;width:auto;filter:drop-shadow(0 0 8px rgba(201,168,76,.25));transition:filter .3s,transform .4s}
     .logo-wrap:hover .nav-logo-icon{filter:drop-shadow(0 0 18px rgba(201,168,76,.6));transform:rotate(-4deg) scale(1.08)}
-    .nav-logo-text{font-family:'Great Vibes',cursive;font-size:2.2rem;color:var(--ember);text-shadow:0 0 30px rgba(201,168,76,.3);line-height:1}
+    /* line-height:1 sets this box to the font's baseline metrics exactly —
+       but Great Vibes' ascenders (the loop on the W) extend above that,
+       so with zero slack the top of the loop clips against the box edge.
+       1.3 gives the ascender room to render fully; padding-top nudges the
+       whole box down a touch so that room isn't eaten by the fixed nav's
+       own vertical centering. */
+    /* Great Vibes' script flourish (the loop on the W) can draw above the
+       font's own assumed ascent line — line-height alone doesn't cover
+       that, because it sizes the box, not where the glyph paints inside
+       it. Real headroom above the glyph is the only thing that reliably
+       stops the fixed nav's edge slicing through it. */
+    .nav-logo-text{font-family:'Great Vibes',cursive;font-size:2.2rem;color:var(--ember);text-shadow:0 0 30px rgba(201,168,76,.3);line-height:1.6;padding-top:.4em;display:inline-block}
     .nav-links{display:flex;gap:2.5rem;list-style:none}
     .nav-links a{font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.24em;text-transform:uppercase;color:var(--mist);text-decoration:none;transition:color .3s}
     .nav-links a:hover{color:var(--ember)}
@@ -47,6 +58,15 @@
     .hero{
       min-height:100vh;position:relative;overflow:hidden;
       display:flex;align-items:center;justify-content:center;
+      padding:6rem 0;box-sizing:border-box;
+    }
+    /* On a short or older phone screen the stacked title can be taller
+       than 100vh. overflow:hidden then clips the top silently — no
+       scrollbar, just missing content. Below ~700px tall, stop forcing
+       vertical centering so the block can grow downward and the page
+       scrolls to reveal all of it instead of cropping it. */
+    @media (max-height:700px){
+      .hero{min-height:auto;align-items:flex-start;overflow:visible}
     }
     .hero-bg{
       position:absolute;inset:0;
@@ -65,12 +85,19 @@
     #pondCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:1}
     .hero-vignette{position:absolute;inset:0;z-index:2;background:radial-gradient(ellipse 70% 60% at 50% 50%,transparent 20%,rgba(2,12,8,.55) 80%),linear-gradient(180deg,rgba(2,12,8,.5) 0%,transparent 25%,transparent 70%,rgba(2,12,8,.8) 100%);pointer-events:none}
 
-    .hero-inner{position:relative;z-index:10;text-align:center;max-width:860px;padding:0 2rem}
+    /* The nav bar is position:fixed — it floats on top of the page rather
+       than pushing content down, so the hero's own vertical centering
+       doesn't know it's there. On a short screen the centered title can
+       land high enough for the nav to physically overlap its top edge —
+       worse with this script font, whose tallest strokes sit right at the
+       top of its own line box. Reserving real space under the nav's own
+       height stops that overlap outright, on every screen size. */
+    .hero-inner{position:relative;z-index:10;text-align:center;max-width:860px;padding:5.5rem 2rem 0}
 
     .hero-eyebrow{font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.52em;text-transform:uppercase;color:var(--gold);margin-bottom:2rem;display:flex;align-items:center;justify-content:center;gap:1.2rem;opacity:0;animation:rise 1s ease .3s forwards}
     .hero-eyebrow::before,.hero-eyebrow::after{content:'';width:40px;height:1px;background:var(--gold);opacity:.45}
 
-    .hero-script{font-family:'Great Vibes',cursive;font-size:clamp(5.5rem,16vw,16rem);line-height:.9;color:transparent;background:linear-gradient(155deg,var(--spark) 0%,var(--ember) 28%,var(--gold) 55%,var(--ember) 80%,var(--spark) 100%);background-size:250% 250%;-webkit-background-clip:text;background-clip:text;animation:rise 1.4s ease .6s forwards,goldflow 7s ease 2s infinite;opacity:0;filter:drop-shadow(0 0 40px rgba(201,168,76,.25))}
+    .hero-script{font-family:'Great Vibes',cursive;font-size:clamp(3.2rem,14vw,16rem);line-height:.9;color:transparent;background:linear-gradient(155deg,var(--spark) 0%,var(--ember) 28%,var(--gold) 55%,var(--ember) 80%,var(--spark) 100%);background-size:250% 250%;-webkit-background-clip:text;background-clip:text;animation:rise 1.4s ease .6s forwards,goldflow 7s ease 2s infinite;opacity:0;filter:drop-shadow(0 0 40px rgba(201,168,76,.25))}
     @keyframes goldflow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 
     .hero-tagline{font-family:'Cormorant Garamond',serif;font-size:clamp(1.1rem,2.4vw,1.85rem);font-style:italic;font-weight:300;color:var(--cream);line-height:1.5;margin:1.4rem auto 0;max-width:580px;min-height:2.5em;opacity:0;animation:rise .8s ease 1.4s forwards}
