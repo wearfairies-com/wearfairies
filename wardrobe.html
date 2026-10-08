@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-wf="wardrobe">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <link rel="icon" type="image/png" href="logo_icon.png"/>
   <title>Browse the Wardrobe — WearFairies</title>
-  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Cinzel:wght@400;500;600&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&display=swap" rel="stylesheet"/>
   <script src="https://js.stripe.com/v3/"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
 <script src="renter-auth-modal.js"></script>
@@ -13,12 +13,12 @@
   /* Renter Auth Modal — reuses wardrobe's .modal-overlay / .modal
      show-hide behaviour. Only the toggle tabs need new rules. */
   .renter-auth-toggle{display:flex;gap:1rem;margin-bottom:2rem;border-bottom:1px solid rgba(201,168,76,.1);padding-bottom:1.2rem}
-  .renter-auth-toggle-btn{font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;background:transparent;border:none;color:var(--mist);padding:.6rem .4rem;cursor:pointer;border-bottom:2px solid transparent;transition:color .3s,border-color .3s}
+  .renter-auth-toggle-btn{font-family:var(--wf);font-size:0.792rem;letter-spacing:.18em;text-transform:uppercase;background:transparent;border:none;color:var(--mist);padding:.6rem .4rem;cursor:pointer;border-bottom:2px solid transparent;transition:color .3s,border-color .3s;font-weight:600}
   .renter-auth-toggle-btn:hover{color:var(--ember)}
   .renter-auth-toggle-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
   .renter-auth-form{display:none}
   .renter-auth-form.active{display:block}
-  .renter-auth-err{color:#e87c7c;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:.95rem;margin-top:.8rem;display:none}
+  .renter-auth-err{color:#e87c7c;font-family:var(--wf);font-style:italic;font-size:.95rem;margin-top:.8rem;display:none}
   .renter-auth-err.show{display:block}
 </style>
   <!-- Google Analytics -->
@@ -26,13 +26,101 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-VPM2FPG2DW');</script>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    /* ══════════════════════════════════════════════════════════════
+       VINTAGE CORNER ORNAMENTS
+
+       Four hand-drawn flourishes, one per screen corner, fixed in
+       place so every page of the site feels like the same considered
+       object as you scroll.
+
+       Design decisions worth recording:
+
+       • Corner pieces only, no connecting border. A full frame reads
+         like a certificate — formal, boxed-in, static. Corners alone
+         read like a letterpress book plate: the eye completes the
+         frame itself, which is more confident and doesn't cage the
+         content.
+
+       • Drawn as SVG paths with asymmetric curves, not CSS borders or
+         geometric shapes. A real engraved corner has a thick-to-thin
+         stroke and an off-centre curl — perfectly symmetrical shapes
+         are the giveaway that something was generated rather than
+         drawn.
+
+       • z-index 600 — above page content, deliberately *below* the
+         nav (700) so a flourish can never overlap the logo or menu,
+         and below the cursor layer (9998+).
+
+       • pointer-events:none throughout, so they can never intercept
+         a click meant for something underneath.
+
+       • Hidden under 700px wide. On a phone the screen edge is
+         already tight; ornament there crowds the content instead of
+         framing it. Better absent than cramped.
+
+       • Opacity is low (.28) on purpose. This should register as
+         "this site has been art-directed" on a second look, not
+         announce itself on the first.
+    ═══════════════════════════════════════════════════════════════ */
+
+    .corner-orn{
+      position:fixed;
+      width:104px;height:104px;
+      z-index:600;
+      pointer-events:none;
+      opacity:.28;
+    }
+    .corner-orn svg{width:100%;height:100%;display:block}
+    .corner-orn path{
+      fill:none;
+      stroke:var(--gold);
+      stroke-width:1.1;
+      stroke-linecap:round;
+    }
+    .corner-orn.tl{top:18px;left:18px}
+    .corner-orn.tr{top:18px;right:18px;transform:scaleX(-1)}
+    .corner-orn.bl{bottom:18px;left:18px;transform:scaleY(-1)}
+    .corner-orn.br{bottom:18px;right:18px;transform:scale(-1,-1)}
+
+    /* The top corners sit in the same band as the fixed nav. Nudge
+       them down so they frame the page, not the header. */
+    .corner-orn.tl,.corner-orn.tr{top:76px}
+
+    @media(max-width:700px){
+      .corner-orn{display:none}
+    }
+
+
+    /* Editorial frame — see index.html for the full reasoning. Crisp
+       double hairline, no glow, the way a printed fashion plate's
+       border actually looks. Used here on the listing photo, which is
+       the one spot on this page where "framed portrait" is the right
+       feeling — you're looking at a dress the way you'd look at a
+       plate in a magazine. */
+    .vint-frame{position:relative;padding:14px}
+    .vint-frame::before,.vint-frame::after{content:'';position:absolute;inset:0;pointer-events:none}
+    .vint-frame::before{border:1px solid rgba(201,168,76,.22)}
+    .vint-frame::after{inset:6px;border:1px solid rgba(201,168,76,.45)}
+    @media (prefers-reduced-motion: no-preference){
+      .vint-frame-corners::before{
+        content:'';position:absolute;inset:6px;pointer-events:none;
+        background-image:
+          radial-gradient(circle at 0 0, transparent 7px, rgba(201,168,76,.35) 7px, rgba(201,168,76,.35) 7.6px, transparent 7.6px),
+          radial-gradient(circle at 100% 0, transparent 7px, rgba(201,168,76,.35) 7px, rgba(201,168,76,.35) 7.6px, transparent 7.6px),
+          radial-gradient(circle at 0 100%, transparent 7px, rgba(201,168,76,.35) 7px, rgba(201,168,76,.35) 7.6px, transparent 7.6px),
+          radial-gradient(circle at 100% 100%, transparent 7px, rgba(201,168,76,.35) 7px, rgba(201,168,76,.35) 7.6px, transparent 7.6px);
+        background-repeat:no-repeat;background-size:16px 16px;
+        background-position:top left,top right,bottom left,bottom right;
+      }
+    }
+
     :root{
       --void:#020c08;--forest:#071410;--canopy:#0a1e12;--moss:#0f2a18;
       --gold:#c9a84c;--ember:#e2c068;--spark:#f5e199;
       --ivory:#f2ead6;--cream:#e0d4b8;--mist:#8aab92;--ghost:#4a6e55;
     }
     html{scroll-behavior:smooth}
-    body{background:var(--void);color:var(--ivory);font-family:'DM Sans',sans-serif;overflow-x:hidden;cursor:none}
+    body{background:var(--void);color:var(--ivory);font-family:var(--wf);overflow-x:hidden;cursor:pointer;font-weight:500}
 
     #cur{position:fixed;width:10px;height:10px;background:var(--ember);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);box-shadow:0 0 10px var(--gold),0 0 22px rgba(201,168,76,.45);transition:width .25s,height .25s}
     #cur.big{width:16px;height:16px}
@@ -44,39 +132,39 @@
     .logo-wrap{display:flex;align-items:center;gap:.6rem;text-decoration:none}
     .nav-logo-icon{height:46px;width:auto;filter:drop-shadow(0 0 8px rgba(201,168,76,.25));transition:filter .3s,transform .4s}
     .logo-wrap:hover .nav-logo-icon{filter:drop-shadow(0 0 18px rgba(201,168,76,.6));transform:rotate(-4deg) scale(1.08)}
-    .nav-logo-text{font-family:'Great Vibes',cursive;font-size:2.2rem;color:var(--ember);text-shadow:0 0 30px rgba(201,168,76,.3);line-height:1.6;padding-top:.4em;display:inline-block}
+    .nav-logo-text{font-family:var(--wf);font-size:1.76rem;color:var(--ember);text-shadow:0 0 30px rgba(201,168,76,.3);line-height:1.6;padding-top:.4em;display:inline-block;font-weight:300}
     .nav-links{display:flex;gap:2.5rem;list-style:none}
-    .nav-links a{font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.24em;text-transform:uppercase;color:var(--mist);text-decoration:none;transition:color .3s}
+    .nav-links a{font-family:var(--wf);font-size:0.766rem;letter-spacing:.24em;text-transform:uppercase;color:var(--mist);text-decoration:none;transition:color .3s;font-weight:600}
     .nav-links a:hover,.nav-links a.active{color:var(--ember)}
-    .nav-pill{font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:var(--void);background:var(--gold);border:none;padding:.65rem 1.5rem;cursor:none;transition:background .3s,transform .2s;text-decoration:none;display:inline-block}
+    .nav-pill{font-family:var(--wf);font-size:0.766rem;letter-spacing:.18em;text-transform:uppercase;color:var(--void);background:var(--gold);border:none;padding:.65rem 1.5rem;cursor:pointer;transition:background .3s,transform .2s;text-decoration:none;display:inline-block;font-weight:600}
     .nav-pill:hover{background:var(--spark);transform:translateY(-1px)}
     @media(max-width:800px){.nav-links{display:none};nav{padding:1.1rem 1.5rem}}
 
     /* PAGE HEADER */
     .page-header{padding:9rem 3rem 4rem;text-align:center;background:linear-gradient(180deg,var(--void) 0%,var(--forest) 100%);position:relative;overflow:hidden}
     .page-header::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 30%,rgba(38,96,64,.18) 0%,transparent 60%)}
-    .page-eyebrow{font-family:'Cinzel',serif;font-size:.56rem;letter-spacing:.48em;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:1.2rem;position:relative;z-index:1}
-    .page-title{font-family:'Great Vibes',cursive;font-size:clamp(3.5rem,8vw,8rem);color:var(--ivory);line-height:1;margin-bottom:1rem;position:relative;z-index:1;text-shadow:0 2px 40px rgba(201,168,76,.15)}
-    .page-sub{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-style:italic;font-weight:300;color:var(--mist);max-width:480px;margin:0 auto;line-height:1.8;position:relative;z-index:1}
+    .page-eyebrow{font-family:var(--wf);font-size:0.739rem;letter-spacing:.48em;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:1.2rem;position:relative;z-index:1;font-weight:600}
+    .page-title{font-family:var(--wf);font-size:clamp(2.8rem,6.4vw,6.4rem);color:var(--ivory);line-height:1;margin-bottom:1rem;position:relative;z-index:1;text-shadow:0 2px 40px rgba(201,168,76,.15);font-weight:300}
+    .page-sub{font-family:var(--wf);font-size:1.1rem;font-style:italic;font-weight:400;color:var(--mist);max-width:480px;margin:0 auto;line-height:1.8;position:relative;z-index:1}
 
     /* FILTER BAR */
     .controls{position:sticky;top:0;z-index:600;background:rgba(7,20,16,.96);backdrop-filter:blur(14px);border-top:1px solid rgba(201,168,76,.1);border-bottom:1px solid rgba(201,168,76,.1);padding:1.2rem 3rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
     .search-wrap{position:relative;flex:1;min-width:200px;max-width:320px}
-    .search-input{width:100%;background:rgba(201,168,76,.04);border:1px solid rgba(201,168,76,.15);padding:.6rem 1rem .6rem 2.4rem;color:var(--ivory);font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;outline:none;transition:border-color .3s}
+    .search-input{width:100%;background:rgba(201,168,76,.04);border:1px solid rgba(201,168,76,.15);padding:.6rem 1rem .6rem 2.4rem;color:var(--ivory);font-family:var(--wf);font-size:1rem;font-style:italic;outline:none;transition:border-color .3s}
     .search-input:focus{border-color:rgba(201,168,76,.4)}
     .search-input::placeholder{color:var(--ghost)}
     .search-icon{position:absolute;left:.7rem;top:50%;transform:translateY(-50%);color:rgba(201,168,76,.4);font-size:.8rem;pointer-events:none}
     .filter-group{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
-    .filter-label{font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
-    .f-btn{font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.12em;text-transform:uppercase;color:var(--mist);background:transparent;border:1px solid rgba(201,168,76,.15);padding:.35rem .9rem;cursor:none;transition:all .25s}
+    .filter-label{font-family:var(--wf);font-size:0.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);font-weight:600}
+    .f-btn{font-family:var(--wf);font-size:0.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--mist);background:transparent;border:1px solid rgba(201,168,76,.15);padding:.35rem .9rem;cursor:pointer;transition:all .25s;font-weight:600}
     .f-btn:hover,.f-btn.active{background:var(--gold);color:var(--void);border-color:var(--gold)}
-    .listing-count{font-family:'Cormorant Garamond',serif;font-size:.9rem;font-style:italic;color:var(--ghost);margin-left:auto}
+    .listing-count{font-family:var(--wf);font-size:.9rem;font-style:italic;color:var(--ghost);margin-left:auto}
 
     /* LOADING */
     .loading{text-align:center;padding:6rem 2rem;grid-column:1/-1}
     .loading-spinner{width:40px;height:40px;border:2px solid rgba(201,168,76,.2);border-top-color:var(--gold);border-radius:50%;margin:0 auto 1.5rem;animation:spin 1s linear infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
-    .loading p{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-style:italic;color:var(--mist)}
+    .loading p{font-family:var(--wf);font-size:1.1rem;font-style:italic;color:var(--mist)}
 
     /* LISTINGS GRID */
     .listings-wrap{padding:4rem 3rem 8rem;background:var(--forest);position:relative}
@@ -84,53 +172,53 @@
     .listings-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:2px;max-width:1400px;margin:0 auto;position:relative;z-index:1}
 
     /* CARD */
-    .listing-card{background:var(--canopy);position:relative;transition:transform .4s,box-shadow .4s;cursor:none}
+    .listing-card{background:var(--canopy);position:relative;transition:transform .4s,box-shadow .4s;cursor:pointer}
     .listing-card:hover{transform:translateY(-4px);box-shadow:0 12px 50px rgba(0,0,0,.5),0 0 0 1px rgba(201,168,76,.2);z-index:2}
     .card-photo{position:relative;overflow:hidden;aspect-ratio:3/4;background:var(--moss)}
     .card-photo img{width:100%;height:100%;object-fit:cover;display:block;filter:sepia(.06) contrast(1.05) brightness(.88);transition:filter .6s,transform .6s}
     .listing-card:hover .card-photo img{filter:sepia(0) contrast(1.08) brightness(.97);transform:scale(1.04)}
     .card-photo-placeholder{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;background:linear-gradient(160deg,var(--moss) 0%,var(--canopy) 100%)}
     .card-photo-placeholder span{font-size:2.5rem;color:rgba(201,168,76,.2)}
-    .card-photo-placeholder p{font-family:'Cormorant Garamond',serif;font-size:.85rem;font-style:italic;color:rgba(201,168,76,.3)}
+    .card-photo-placeholder p{font-family:var(--wf);font-size:.85rem;font-style:italic;color:rgba(201,168,76,.3)}
     .card-corner{position:absolute;width:20px;height:20px;z-index:3;pointer-events:none}
     .card-corner.tl{top:8px;left:8px;border-top:1.5px solid rgba(201,168,76,.5);border-left:1.5px solid rgba(201,168,76,.5)}
     .card-corner.tr{top:8px;right:8px;border-top:1.5px solid rgba(201,168,76,.5);border-right:1.5px solid rgba(201,168,76,.5)}
     .card-corner.bl{bottom:8px;left:8px;border-bottom:1.5px solid rgba(201,168,76,.5);border-left:1.5px solid rgba(201,168,76,.5)}
     .card-corner.br{bottom:8px;right:8px;border-bottom:1.5px solid rgba(201,168,76,.5);border-right:1.5px solid rgba(201,168,76,.5)}
-    .avail-badge{position:absolute;top:10px;right:10px;z-index:4;font-family:'Cinzel',serif;font-size:.45rem;letter-spacing:.12em;text-transform:uppercase;padding:.3rem .7rem}
+    .avail-badge{position:absolute;top:10px;right:10px;z-index:4;font-family:var(--wf);font-size:0.7rem;letter-spacing:.12em;text-transform:uppercase;padding:.3rem .7rem;font-weight:600}
     .avail-badge.available{background:var(--gold);color:var(--void)}
     .avail-badge.taken{background:rgba(255,255,255,.06);color:var(--mist);border:1px solid rgba(255,255,255,.1)}
-    .new-badge{position:absolute;top:10px;left:10px;z-index:4;font-family:'Cinzel',serif;font-size:.42rem;letter-spacing:.12em;text-transform:uppercase;background:var(--ember);color:var(--void);padding:.25rem .6rem}
+    .new-badge{position:absolute;top:10px;left:10px;z-index:4;font-family:var(--wf);font-size:0.7rem;letter-spacing:.12em;text-transform:uppercase;background:var(--ember);color:var(--void);padding:.25rem .6rem;font-weight:600}
     .card-body{padding:1.6rem 1.8rem 1.8rem}
     .card-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem}
-    .card-occasion{font-family:'Cinzel',serif;font-size:.48rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
-    .card-date{font-family:'Cormorant Garamond',serif;font-size:.8rem;font-style:italic;color:var(--ghost)}
-    .card-title{font-family:'Great Vibes',cursive;font-size:1.8rem;color:var(--ivory);line-height:1.1;margin-bottom:.5rem}
-    .card-lister{font-family:'Cormorant Garamond',serif;font-size:.88rem;font-style:italic;color:var(--mist);margin-bottom:.5rem}
+    .card-occasion{font-family:var(--wf);font-size:0.7rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);font-weight:600}
+    .card-date{font-family:var(--wf);font-size:.8rem;font-style:italic;color:var(--ghost)}
+    .card-title{font-family:var(--wf);font-size:1.44rem;color:var(--ivory);line-height:1.1;margin-bottom:.5rem;font-weight:300}
+    .card-lister{font-family:var(--wf);font-size:.88rem;font-style:italic;color:var(--mist);margin-bottom:.5rem}
     .card-lister span{color:var(--ember)}
-    .card-price{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-style:italic;color:var(--ember);margin-bottom:.8rem}
+    .card-price{font-family:var(--wf);font-size:1.4rem;font-style:italic;color:var(--ember);margin-bottom:.8rem}
     .card-price small{font-size:.85rem;color:var(--mist)}
-    .card-desc{font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;font-weight:300;color:var(--mist);line-height:1.75;margin-bottom:1.2rem;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+    .card-desc{font-family:var(--wf);font-size:1rem;font-style:italic;font-weight:400;color:var(--mist);line-height:1.75;margin-bottom:1.2rem;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
     .card-tags{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1.5rem}
-    .card-tag{font-family:'Cinzel',serif;font-size:.44rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(201,168,76,.18);padding:.22rem .6rem}
+    .card-tag{font-family:var(--wf);font-size:0.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(201,168,76,.18);padding:.22rem .6rem;font-weight:600}
     .card-footer{display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(201,168,76,.08);padding-top:1.2rem;gap:1rem}
-    .card-location{font-family:'Cormorant Garamond',serif;font-size:.88rem;font-style:italic;color:var(--ghost);display:flex;align-items:center;gap:.4rem}
+    .card-location{font-family:var(--wf);font-size:.88rem;font-style:italic;color:var(--ghost);display:flex;align-items:center;gap:.4rem}
     .card-location::before{content:'📍';font-size:.75rem}
-    .want-btn{font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.15em;text-transform:uppercase;color:var(--void);background:var(--gold);border:none;padding:.7rem 1.5rem;cursor:none;transition:background .3s,transform .2s,box-shadow .3s;white-space:nowrap;flex-shrink:0;box-shadow:0 4px 16px rgba(201,168,76,.25)}
+    .want-btn{font-family:var(--wf);font-size:0.726rem;letter-spacing:.15em;text-transform:uppercase;color:var(--void);background:var(--gold);border:none;padding:.7rem 1.5rem;cursor:pointer;transition:background .3s,transform .2s,box-shadow .3s;white-space:nowrap;flex-shrink:0;box-shadow:0 4px 16px rgba(201,168,76,.25);font-weight:600}
     .want-btn:hover{background:var(--spark);transform:translateY(-2px);box-shadow:0 8px 24px rgba(201,168,76,.4)}
     .want-btn.taken{background:rgba(201,168,76,.12);color:var(--mist);cursor:not-allowed;transform:none;box-shadow:none}
 
     /* EMPTY STATE */
     .empty-state{text-align:center;padding:6rem 2rem;grid-column:1/-1}
-    .empty-title{font-family:'Great Vibes',cursive;font-size:3rem;color:var(--mist);margin-bottom:1rem}
-    .empty-sub{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-style:italic;color:var(--ghost);margin-bottom:2rem}
+    .empty-title{font-family:var(--wf);font-size:2.4rem;color:var(--mist);margin-bottom:1rem;font-weight:300}
+    .empty-sub{font-family:var(--wf);font-size:1.1rem;font-style:italic;color:var(--ghost);margin-bottom:2rem}
 
     /* LIST BANNER */
     .list-banner{padding:6rem 3rem;text-align:center;background:linear-gradient(135deg,var(--void) 0%,var(--canopy) 50%,var(--void) 100%);border-top:1px solid rgba(201,168,76,.1);position:relative;overflow:hidden}
-    .list-banner::before{content:'Fairies';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Great Vibes',cursive;font-size:20rem;color:rgba(201,168,76,.02);pointer-events:none;user-select:none;white-space:nowrap}
-    .banner-title{font-family:'Great Vibes',cursive;font-size:clamp(2.5rem,5vw,5rem);color:var(--ivory);margin-bottom:1rem;position:relative;z-index:1}
-    .banner-sub{font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-style:italic;color:var(--mist);max-width:460px;margin:0 auto 2.5rem;line-height:1.8;position:relative;z-index:1}
-    .btn-gold{font-family:'Cinzel',serif;font-size:.63rem;letter-spacing:.2em;text-transform:uppercase;color:var(--void);padding:1rem 2.4rem;cursor:none;text-decoration:none;display:inline-block;background:linear-gradient(135deg,var(--gold) 0%,var(--ember) 50%,var(--gold) 100%);background-size:220% 100%;border:none;box-shadow:0 4px 24px rgba(201,168,76,.28);transition:background-position .5s,transform .25s,box-shadow .3s;position:relative;z-index:1}
+    .list-banner::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:var(--wf);font-size:16rem;color:rgba(201,168,76,.02);pointer-events:none;user-select:none;white-space:nowrap;font-weight:300}
+    .banner-title{font-family:var(--wf);font-size:clamp(2rem,4vw,4rem);color:var(--ivory);margin-bottom:1rem;position:relative;z-index:1;font-weight:300}
+    .banner-sub{font-family:var(--wf);font-size:1.15rem;font-style:italic;color:var(--mist);max-width:460px;margin:0 auto 2.5rem;line-height:1.8;position:relative;z-index:1}
+    .btn-gold{font-family:var(--wf);font-size:0.832rem;letter-spacing:.2em;text-transform:uppercase;color:var(--void);padding:1rem 2.4rem;cursor:pointer;text-decoration:none;display:inline-block;background:linear-gradient(135deg,var(--gold) 0%,var(--ember) 50%,var(--gold) 100%);background-size:220% 100%;border:none;box-shadow:0 4px 24px rgba(201,168,76,.28);transition:background-position .5s,transform .25s,box-shadow .3s;position:relative;z-index:1;font-weight:600}
     .btn-gold:hover{background-position:100% 0;transform:translateY(-3px);box-shadow:0 10px 36px rgba(201,168,76,.45)}
 
     /* MODAL */
@@ -138,55 +226,55 @@
     .modal-overlay.open{opacity:1;pointer-events:all}
     .modal{background:var(--canopy);border:1px solid rgba(201,168,76,.2);padding:3rem;max-width:520px;width:92%;position:relative;transform:translateY(20px);transition:transform .3s;max-height:90vh;overflow-y:auto}
     .modal-overlay.open .modal{transform:translateY(0)}
-    .modal-close{position:absolute;top:1.2rem;right:1.5rem;background:transparent;border:none;color:var(--mist);font-size:1.2rem;cursor:none;transition:color .3s;line-height:1}
+    .modal-close{position:absolute;top:1.2rem;right:1.5rem;background:transparent;border:none;color:var(--mist);font-size:1.2rem;cursor:pointer;transition:color .3s;line-height:1}
     .modal-close:hover{color:var(--gold)}
     .modal-piece-preview{display:flex;gap:1.2rem;align-items:center;padding:1.2rem;background:rgba(201,168,76,.04);border:1px solid rgba(201,168,76,.12);margin-bottom:2rem}
     .modal-piece-img{width:60px;height:80px;object-fit:cover;flex-shrink:0}
     .modal-piece-img-placeholder{width:60px;height:80px;background:var(--moss);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.5rem;color:rgba(201,168,76,.3)}
-    .modal-piece-name{font-family:'Great Vibes',cursive;font-size:1.6rem;color:var(--ivory);line-height:1.1}
-    .modal-piece-lister{font-family:'Cormorant Garamond',serif;font-size:.9rem;font-style:italic;color:var(--mist)}
+    .modal-piece-name{font-family:var(--wf);font-size:1.28rem;color:var(--ivory);line-height:1.1;font-weight:300}
+    .modal-piece-lister{font-family:var(--wf);font-size:.9rem;font-style:italic;color:var(--mist)}
     .modal-piece-lister span{color:var(--ember)}
-    .modal-piece-price{font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.1em;color:var(--gold);margin-top:.3rem}
-    .modal-eyebrow{font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:.6rem;display:block}
-    .modal-title{font-family:'Great Vibes',cursive;font-size:2.5rem;color:var(--ivory);margin-bottom:.4rem}
-    .modal-sub{font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--mist);margin-bottom:1.5rem;line-height:1.6}
+    .modal-piece-price{font-family:var(--wf);font-size:0.858rem;letter-spacing:.1em;color:var(--gold);margin-top:.3rem;font-weight:600}
+    .modal-eyebrow{font-family:var(--wf);font-size:0.7rem;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:.6rem;display:block;font-weight:600}
+    .modal-title{font-family:var(--wf);font-size:2rem;color:var(--ivory);margin-bottom:.4rem;font-weight:300}
+    .modal-sub{font-family:var(--wf);font-size:1rem;font-style:italic;color:var(--mist);margin-bottom:1.5rem;line-height:1.6}
     .g-rule{display:flex;align-items:center;gap:1rem;margin:1.5rem 0}
     .g-rule-line{flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,.25),transparent)}
     .g-rule-gem{width:5px;height:5px;background:var(--gold);transform:rotate(45deg);flex-shrink:0}
     .modal-field{margin-bottom:1.4rem}
-    .modal-label{font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:.5rem}
-    .modal-input,.modal-textarea{width:100%;background:transparent;border:none;border-bottom:1px solid rgba(201,168,76,.2);padding:.7rem 0;color:var(--ivory);font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-style:italic;outline:none;transition:border-color .3s}
+    .modal-label{font-family:var(--wf);font-size:0.7rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:.5rem;font-weight:600}
+    .modal-input,.modal-textarea{width:100%;background:transparent;border:none;border-bottom:1px solid rgba(201,168,76,.2);padding:.7rem 0;color:var(--ivory);font-family:var(--wf);font-size:1.1rem;font-style:italic;outline:none;transition:border-color .3s}
     .modal-input:focus,.modal-textarea:focus{border-bottom-color:var(--gold)}
     .modal-input::placeholder,.modal-textarea::placeholder{color:var(--ghost);font-style:italic}
     .modal-textarea{resize:none;height:80px;border:1px solid rgba(201,168,76,.15);padding:.7rem;margin-top:.2rem}
     .modal-textarea:focus{border-color:var(--gold)}
-    .date-summary{font-family:'Cormorant Garamond',serif;font-size:.95rem;font-style:italic;color:var(--mist);padding:.5rem 0;min-height:1.5rem}
+    .date-summary{font-family:var(--wf);font-size:.95rem;font-style:italic;color:var(--mist);padding:.5rem 0;min-height:1.5rem}
     .date-summary span{color:var(--ember)}
     .modal-tip-opts{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.5rem}
-    .mtip-btn{font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);background:transparent;border:1px solid rgba(201,168,76,.22);padding:.55rem 1.2rem;cursor:none;transition:all .25s}
+    .mtip-btn{font-family:var(--wf);font-size:0.766rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);background:transparent;border:1px solid rgba(201,168,76,.22);padding:.55rem 1.2rem;cursor:pointer;transition:all .25s;font-weight:600}
     .mtip-btn:hover{background:rgba(201,168,76,.08);border-color:var(--gold)}
     .mtip-btn.sel{background:var(--gold);color:var(--void);border-color:var(--gold)}
-    .modal-notice{font-family:'Cormorant Garamond',serif;font-size:.88rem;font-style:italic;color:var(--ghost);line-height:1.6;margin-top:1rem;padding:1rem;background:rgba(201,168,76,.03);border-left:2px solid rgba(201,168,76,.2)}
-    .modal-submit{font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--void);background:linear-gradient(135deg,var(--gold) 0%,var(--ember) 50%,var(--gold) 100%);background-size:220% 100%;border:none;padding:1rem 2.5rem;cursor:none;width:100%;margin-top:1.5rem;transition:background-position .5s,transform .25s,box-shadow .3s;box-shadow:0 4px 20px rgba(201,168,76,.25)}
+    .modal-notice{font-family:var(--wf);font-size:.88rem;font-style:italic;color:var(--ghost);line-height:1.6;margin-top:1rem;padding:1rem;background:rgba(201,168,76,.03);border-left:2px solid rgba(201,168,76,.2)}
+    .modal-submit{font-family:var(--wf);font-size:0.858rem;letter-spacing:.2em;text-transform:uppercase;color:var(--void);background:linear-gradient(135deg,var(--gold) 0%,var(--ember) 50%,var(--gold) 100%);background-size:220% 100%;border:none;padding:1rem 2.5rem;cursor:pointer;width:100%;margin-top:1.5rem;transition:background-position .5s,transform .25s,box-shadow .3s;box-shadow:0 4px 20px rgba(201,168,76,.25);font-weight:600}
     .modal-submit:hover{background-position:100% 0;transform:translateY(-2px);box-shadow:0 8px 30px rgba(201,168,76,.4)}
 
     /* Payment step */
     #paymentStep{display:none}
     #card-element{background:rgba(201,168,76,.04);border:1px solid rgba(201,168,76,.15);padding:1.2rem;margin-bottom:1rem}
-    #card-errors{color:#e87c7c;font-family:'Cormorant Garamond',serif;font-size:.9rem;font-style:italic;min-height:1.2rem}
+    #card-errors{color:#e87c7c;font-family:var(--wf);font-size:.9rem;font-style:italic;min-height:1.2rem}
 
     .modal-success{display:none;text-align:center;padding:2.5rem 1rem}
     .modal-success.show{display:block}
-    .modal-success-title{font-family:'Great Vibes',cursive;font-size:3rem;color:var(--ember);margin-bottom:.8rem}
-    .modal-success-sub{font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--mist);line-height:1.7}
+    .modal-success-title{font-family:var(--wf);font-size:2.4rem;color:var(--ember);margin-bottom:.8rem;font-weight:300}
+    .modal-success-sub{font-family:var(--wf);font-size:1rem;font-style:italic;color:var(--mist);line-height:1.7}
 
     /* FOOTER */
     footer{background:rgba(1,6,3,1);border-top:1px solid rgba(201,168,76,.12);padding:2.8rem 4rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1.5rem}
-    .foot-logo{font-family:'Great Vibes',cursive;font-size:2rem;color:var(--ember)}
+    .foot-logo{font-family:var(--wf);font-size:1.6rem;color:var(--ember);font-weight:300}
     .foot-links{display:flex;gap:2rem;list-style:none}
-    .foot-links a{font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mist);text-decoration:none;transition:color .3s}
+    .foot-links a{font-family:var(--wf);font-size:0.726rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mist);text-decoration:none;transition:color .3s;font-weight:600}
     .foot-links a:hover{color:var(--ember)}
-    .foot-copy{font-family:'Cormorant Garamond',serif;font-size:.85rem;font-style:italic;color:rgba(138,171,146,.28)}
+    .foot-copy{font-family:var(--wf);font-size:.85rem;font-style:italic;color:rgba(138,171,146,.28)}
 
     .rv{opacity:0;transform:translateY(38px);transition:opacity .95s ease,transform .95s ease}
     .rv.in{opacity:1;transform:translateY(0)}
@@ -194,15 +282,92 @@
     @media(max-width:900px){.listings-grid{grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}.controls{padding:1rem 1.5rem}footer{flex-direction:column;align-items:flex-start}}
     @media(max-width:540px){.listings-grid{grid-template-columns:1fr 1fr;gap:1px}.card-body{padding:1.2rem 1.2rem 1.5rem}.listings-wrap{padding:3rem 1rem 6rem}.modal{padding:2rem 1.5rem}}
   </style>
+  <link rel="stylesheet" href="wf-theme.css"/>
+  <script src="wf-live.js" defer blocking="render"></script>
+  <link rel="manifest" href="/manifest.json"/>
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
+  <meta name="apple-mobile-web-app-title" content="WearFairies"/>
 </head>
 <body>
+
+<!-- Vintage corner ornaments — see the .corner-orn block in <style>.
+     One SVG, rotated/mirrored by CSS into all four corners, so the
+     drawing only has to exist once. -->
+<div class="corner-orn tl" aria-hidden="true">
+  <svg viewBox="0 0 104 104" xmlns="http://www.w3.org/2000/svg">
+    <!-- long sweep down the left, tapering -->
+    <path d="M6 96 C6 52, 10 22, 30 8"/>
+    <!-- long sweep along the top, mirroring it -->
+    <path d="M96 6 C52 6, 22 10, 8 30"/>
+    <!-- inner echo line, shorter, creates the double-rule depth -->
+    <path d="M14 78 C14 46, 18 26, 34 16" opacity=".55"/>
+    <path d="M78 14 C46 14, 26 18, 16 34" opacity=".55"/>
+    <!-- the curl: asymmetric on purpose, an engraved corner never
+         resolves into a perfect circle -->
+    <path d="M30 8 C40 2, 50 6, 48 14 C46 21, 36 22, 34 16"/>
+    <path d="M8 30 C2 40, 6 50, 14 48 C21 46, 22 36, 16 34"/>
+    <!-- small leaf, the hand-drawn detail that stops it reading as
+         generated geometry -->
+    <path d="M24 24 C30 18, 38 20, 40 26 C34 32, 26 30, 24 24"/>
+    <!-- three diminishing dots trailing off along the diagonal -->
+    <path d="M52 52 L52.6 52" stroke-width="2.4" opacity=".9"/>
+    <path d="M62 62 L62.5 62" stroke-width="1.9" opacity=".65"/>
+    <path d="M71 71 L71.4 71" stroke-width="1.5" opacity=".4"/>
+  </svg>
+</div>
+<div class="corner-orn tr" aria-hidden="true">
+  <svg viewBox="0 0 104 104" xmlns="http://www.w3.org/2000/svg">
+    <path d="M6 96 C6 52, 10 22, 30 8"/>
+    <path d="M96 6 C52 6, 22 10, 8 30"/>
+    <path d="M14 78 C14 46, 18 26, 34 16" opacity=".55"/>
+    <path d="M78 14 C46 14, 26 18, 16 34" opacity=".55"/>
+    <path d="M30 8 C40 2, 50 6, 48 14 C46 21, 36 22, 34 16"/>
+    <path d="M8 30 C2 40, 6 50, 14 48 C21 46, 22 36, 16 34"/>
+    <path d="M24 24 C30 18, 38 20, 40 26 C34 32, 26 30, 24 24"/>
+    <path d="M52 52 L52.6 52" stroke-width="2.4" opacity=".9"/>
+    <path d="M62 62 L62.5 62" stroke-width="1.9" opacity=".65"/>
+    <path d="M71 71 L71.4 71" stroke-width="1.5" opacity=".4"/>
+  </svg>
+</div>
+<div class="corner-orn bl" aria-hidden="true">
+  <svg viewBox="0 0 104 104" xmlns="http://www.w3.org/2000/svg">
+    <path d="M6 96 C6 52, 10 22, 30 8"/>
+    <path d="M96 6 C52 6, 22 10, 8 30"/>
+    <path d="M14 78 C14 46, 18 26, 34 16" opacity=".55"/>
+    <path d="M78 14 C46 14, 26 18, 16 34" opacity=".55"/>
+    <path d="M30 8 C40 2, 50 6, 48 14 C46 21, 36 22, 34 16"/>
+    <path d="M8 30 C2 40, 6 50, 14 48 C21 46, 22 36, 16 34"/>
+    <path d="M24 24 C30 18, 38 20, 40 26 C34 32, 26 30, 24 24"/>
+    <path d="M52 52 L52.6 52" stroke-width="2.4" opacity=".9"/>
+    <path d="M62 62 L62.5 62" stroke-width="1.9" opacity=".65"/>
+    <path d="M71 71 L71.4 71" stroke-width="1.5" opacity=".4"/>
+  </svg>
+</div>
+<div class="corner-orn br" aria-hidden="true">
+  <svg viewBox="0 0 104 104" xmlns="http://www.w3.org/2000/svg">
+    <path d="M6 96 C6 52, 10 22, 30 8"/>
+    <path d="M96 6 C52 6, 22 10, 8 30"/>
+    <path d="M14 78 C14 46, 18 26, 34 16" opacity=".55"/>
+    <path d="M78 14 C46 14, 26 18, 16 34" opacity=".55"/>
+    <path d="M30 8 C40 2, 50 6, 48 14 C46 21, 36 22, 34 16"/>
+    <path d="M8 30 C2 40, 6 50, 14 48 C21 46, 22 36, 16 34"/>
+    <path d="M24 24 C30 18, 38 20, 40 26 C34 32, 26 30, 24 24"/>
+    <path d="M52 52 L52.6 52" stroke-width="2.4" opacity=".9"/>
+    <path d="M62 62 L62.5 62" stroke-width="1.9" opacity=".65"/>
+    <path d="M71 71 L71.4 71" stroke-width="1.5" opacity=".4"/>
+  </svg>
+</div>
+
 
 <div id="cur"></div>
 <div id="cur-ring"></div>
 
 <nav>
   <a href="index.html" class="logo-wrap">
-    <img src="logo_icon.png" class="nav-logo-icon" alt="Fairies" onerror="this.style.display='none'"/>
+    <img src="logo_icon.png" class="nav-logo-icon" alt="WearFairies" onerror="this.style.display='none'"/>
     <span class="nav-logo-text">WearFairies</span>
   </a>
   <ul class="nav-links">
@@ -214,8 +379,8 @@
 </nav>
 
 <div class="page-header">
-  <span class="page-eyebrow">✦ Real Wardrobes · Boston ✦</span>
-  <h1 class="page-title">The Wardrobe</h1>
+  <span class="page-eyebrow">Real wardrobes · Greater Boston</span>
+  <h1 class="page-title">The <em>Wardrobe</em></h1>
   <p class="page-sub">Every piece here is from a real person in your city. Find the one you want and claim it — we handle the rest.</p>
 </div>
 
@@ -245,8 +410,8 @@
 </section>
 
 <div class="list-banner rv">
-  <h2 class="banner-title">Have a piece to share?</h2>
-  <p class="banner-sub">List it on Fairies and earn every time someone borrows it. We handle every pickup and delivery.</p>
+  <h2 class="banner-title">Have a piece <em>to share?</em></h2>
+  <p class="banner-sub">List it on WearFairies and earn every time someone borrows it. We handle every pickup and delivery.</p>
   <a href="list.html" class="btn-gold">List Your Piece →</a>
 </div>
 
@@ -260,7 +425,7 @@
     <li><a href="https://www.tiktok.com/@wearfairiess" target="_blank">TikTok</a></li>
     <li><a href="https://www.facebook.com/wearfairies" target="_blank">Facebook</a></li>
   </ul>
-  <p class="foot-copy">© 2026 Fairies Dress Lending · Greater Boston, MA</p>
+  <p class="foot-copy">© 2026 WearFairies · Greater Boston, MA</p>
 </footer>
 
 <!-- LISTING DETAIL MODAL -->
@@ -269,7 +434,7 @@
     <button class="modal-close" onclick="closeDetailModal()">✕</button>
     
     <div id="detailContent">
-      <div style="position:relative;margin-bottom:2rem">
+      <div class="vint-frame vint-frame-corners" style="position:relative;margin-bottom:2rem">
         <div id="photoCarousel" style="position:relative;width:100%;aspect-ratio:1;background:var(--canopy);border:1px solid rgba(201,168,76,.15);display:flex;align-items:center;justify-content:center;overflow:hidden">
           <img id="detailPhoto" src="" alt="" style="width:100%;height:100%;object-fit:cover"/>
           <div style="position:absolute;bottom:1rem;left:50%;transform:translateX(-50%);display:flex;gap:.5rem" id="photoDots"></div>
@@ -278,18 +443,18 @@
         <button type="button" id="nextPhotoBtn" style="position:absolute;right:1rem;top:50%;transform:translateY(-50%);background:rgba(201,168,76,.2);border:none;color:var(--gold);padding:.5rem .8rem;cursor:pointer;font-size:1.2rem" onclick="nextPhoto()">›</button>
       </div>
       
-      <h2 id="detailTitle" style="font-family:'Great Vibes',cursive;font-size:2rem;color:var(--ivory);margin-bottom:.5rem"></h2>
-      <p id="detailLister" style="font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--mist);margin-bottom:1.5rem"></p>
+      <h2 id="detailTitle" style="font-family:var(--wf);font-size:1.6rem;color:var(--ivory);margin-bottom:.5rem;font-weight:300"></h2>
+      <p id="detailLister" style="font-family:var(--wf);font-size:1rem;font-style:italic;color:var(--mist);margin-bottom:1.5rem"></p>
       
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem;padding:1rem;background:rgba(201,168,76,.05);border:1px solid rgba(201,168,76,.1)">
-        <div><p style="font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold)">Size</p><p id="detailSize" style="font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--ivory)"></p></div>
-        <div><p style="font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold)">Condition</p><p id="detailCondition" style="font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--ivory)"></p></div>
-        <div><p style="font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold)">Occasion</p><p id="detailOccasion" style="font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--ivory)"></p></div>
-        <div><p style="font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold)">Price/Night</p><p id="detailPrice" style="font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--ember)"></p></div>
+        <div><p style="font-family:var(--wf);font-size:0.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);font-weight:600">Size</p><p id="detailSize" style="font-family:var(--wf);font-size:1rem;font-style:italic;color:var(--ivory)"></p></div>
+        <div><p style="font-family:var(--wf);font-size:0.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);font-weight:600">Condition</p><p id="detailCondition" style="font-family:var(--wf);font-size:1rem;font-style:italic;color:var(--ivory)"></p></div>
+        <div><p style="font-family:var(--wf);font-size:0.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);font-weight:600">Occasion</p><p id="detailOccasion" style="font-family:var(--wf);font-size:1rem;font-style:italic;color:var(--ivory)"></p></div>
+        <div><p style="font-family:var(--wf);font-size:0.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);font-weight:600">Price/Night</p><p id="detailPrice" style="font-family:var(--wf);font-size:1rem;font-style:italic;color:var(--ember)"></p></div>
       </div>
       
-      <p id="detailDesc" style="font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--mist);line-height:1.7;margin-bottom:2rem"></p>
-      <p id="detailStory" style="display:none;font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--ember);line-height:1.8;margin-bottom:2rem;padding-left:1rem;border-left:1px solid rgba(201,168,76,.25)"></p>
+      <p id="detailDesc" style="font-family:var(--wf);font-size:1rem;font-style:italic;color:var(--mist);line-height:1.7;margin-bottom:2rem"></p>
+      <p id="detailStory" style="display:none;font-family:var(--wf);font-size:1rem;font-style:italic;color:var(--ember);line-height:1.8;margin-bottom:2rem;padding-left:1rem;border-left:1px solid rgba(201,168,76,.25)"></p>
       
       <button type="button" class="modal-submit" onclick="goToWantThis()" style="width:100%">I Want This ✦</button>
     </div>
@@ -407,8 +572,8 @@
 
     <div id="wantFormWrap">
       <span class="modal-eyebrow">✦ You found the one</span>
-      <h3 class="modal-title">I Want This</h3>
-      <p class="modal-sub">Fill in your details and send your message. Both Fairies and the lender will be notified. Payment is required before delivery.</p>
+      <h3 class="modal-title">I Want <em>This</em></h3>
+      <p class="modal-sub">Fill in your details and send your message. Both WF and the lender will be notified. Payment is required before delivery.</p>
 
       <div class="modal-piece-preview">
         <div class="modal-piece-img-placeholder" id="modalImgWrap">✦</div>
@@ -468,7 +633,7 @@
         <div class="g-rule"><div class="g-rule-line"></div><div class="g-rule-gem"></div><div class="g-rule-line"></div></div>
 
         <div class="modal-field">
-          <label class="modal-label">Tip for your delivery ✦ <span style="color:var(--ghost);font-size:.8em;letter-spacing:0;text-transform:none;font-family:'Cormorant Garamond',serif;font-style:italic">100% goes to your delivery person</span></label>
+          <label class="modal-label">Tip for your delivery ✦ <span style="color:var(--ghost);font-size:.8em;letter-spacing:0;text-transform:none;font-family:var(--wf);font-style:italic">100% goes to your delivery person</span></label>
           <div class="modal-tip-opts">
             <button type="button" class="mtip-btn" onclick="setModalTip(3,this)">$3</button>
             <button type="button" class="mtip-btn" onclick="setModalTip(5,this)">$5</button>
@@ -476,7 +641,7 @@
             <button type="button" class="mtip-btn" onclick="setModalTip(0,this)">No tip</button>
           </div>
           <div style="position:relative;margin-top:.8rem">
-            <span style="position:absolute;left:0;top:.5rem;font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--gold)">$</span>
+            <span style="position:absolute;left:0;top:.5rem;font-family:var(--wf);font-size:1rem;font-style:italic;color:var(--gold)">$</span>
             <input type="number" id="modalCustomTip" class="modal-input" placeholder="Custom amount" min="0" step="0.50" style="padding-left:1.5rem" oninput="clearModalTipBtns()"/>
           </div>
         </div>
@@ -485,9 +650,9 @@
 
         <div class="modal-field">
           <label class="modal-label">✦ Payment ✦</label>
-          <p style="font-family:'Cormorant Garamond',serif;font-size:.95rem;font-style:italic;color:var(--mist);margin-bottom:1rem">Pay securely now. Your card is handled by Stripe — details never touch our servers.</p>
+          <p style="font-family:var(--wf);font-size:.95rem;font-style:italic;color:var(--mist);margin-bottom:1rem">Pay securely now. Your card is handled by Stripe — details never touch our servers.</p>
           <div id="card-element" style="border:1px solid rgba(201,168,76,.2);padding:1rem;border-radius:4px;margin-bottom:1rem"></div>
-          <div id="card-errors" style="color:#e87c7c;font-family:'Cormorant Garamond',serif;font-style:italic;margin-bottom:1rem;display:none"></div>
+          <div id="card-errors" style="color:#e87c7c;font-family:var(--wf);font-style:italic;margin-bottom:1rem;display:none"></div>
         </div>
 
         <button type="button" class="modal-submit" onclick="submitPaymentFromModal()">Complete Booking ✦</button>
@@ -499,7 +664,7 @@
 
     <div class="modal-success" id="modalSuccess">
       <p class="modal-success-title">Booking confirmed ✦</p>
-      <p class="modal-success-sub">Payment received. Both Fairies and the lender have been notified.<br><br>We'll be in touch to confirm delivery details.<br><br>Get ready for your moment.</p>
+      <p class="modal-success-sub">Payment received. Both WF and the lender have been notified.<br><br>We'll be in touch to confirm delivery details.<br><br>Get ready for your moment.</p>
     </div>
   </div>
 </div>
