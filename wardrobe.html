@@ -283,7 +283,6 @@
     @media(max-width:540px){.listings-grid{grid-template-columns:1fr 1fr;gap:1px}.card-body{padding:1.2rem 1.2rem 1.5rem}.listings-wrap{padding:3rem 1rem 6rem}.modal{padding:2rem 1.5rem}}
   </style>
   <link rel="stylesheet" href="wf-theme.css"/>
-  <script src="wf-live.js" defer blocking="render"></script>
   <link rel="manifest" href="/manifest.json"/>
   <link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
   <meta name="mobile-web-app-capable" content="yes"/>
@@ -292,6 +291,7 @@
   <meta name="apple-mobile-web-app-title" content="WearFairies"/>
 </head>
 <body>
+<script src="wf-live.js"></script>
 
 <!-- Vintage corner ornaments — see the .corner-orn block in <style>.
      One SVG, rotated/mirrored by CSS into all four corners, so the
@@ -411,7 +411,7 @@
 
 <div class="list-banner rv">
   <h2 class="banner-title">Have a piece <em>to share?</em></h2>
-  <p class="banner-sub">List it on WearFairies and earn every time someone borrows it. We handle every pickup and delivery.</p>
+  <p class="banner-sub">List it on WearFairies and earn every time someone borrows it. You list it; we do everything else.<br><span style="color:var(--ember);font-style:italic">Founding lenders: our first 20 keep <b>50%</b> of every rental for six months.</span></p>
   <a href="list.html" class="btn-gold">List Your Piece →</a>
 </div>
 
@@ -633,7 +633,7 @@
         <div class="g-rule"><div class="g-rule-line"></div><div class="g-rule-gem"></div><div class="g-rule-line"></div></div>
 
         <div class="modal-field">
-          <label class="modal-label">Tip for your delivery ✦ <span style="color:var(--ghost);font-size:.8em;letter-spacing:0;text-transform:none;font-family:var(--wf);font-style:italic">100% goes to your delivery person</span></label>
+          <label class="modal-label">Add a tip <span style="color:var(--ghost);font-size:.9em;letter-spacing:.04em;text-transform:none;font-style:italic;font-weight:500">· optional</span></label>
           <div class="modal-tip-opts">
             <button type="button" class="mtip-btn" onclick="setModalTip(3,this)">$3</button>
             <button type="button" class="mtip-btn" onclick="setModalTip(5,this)">$5</button>
@@ -641,8 +641,8 @@
             <button type="button" class="mtip-btn" onclick="setModalTip(0,this)">No tip</button>
           </div>
           <div style="position:relative;margin-top:.8rem">
-            <span style="position:absolute;left:0;top:.5rem;font-family:var(--wf);font-size:1rem;font-style:italic;color:var(--gold)">$</span>
-            <input type="number" id="modalCustomTip" class="modal-input" placeholder="Custom amount" min="0" step="0.50" style="padding-left:1.5rem" oninput="clearModalTipBtns()"/>
+            <span style="position:absolute;left:1.1rem;top:50%;transform:translateY(-50%);font-family:var(--wf);font-size:1.05rem;font-weight:600;color:var(--gold);pointer-events:none;z-index:1">$</span>
+            <input type="number" inputmode="decimal" id="modalCustomTip" class="modal-input" placeholder="Custom amount" min="0" step="0.50" style="padding-left:2.3rem !important" oninput="clearModalTipBtns()"/>
           </div>
         </div>
 
@@ -651,7 +651,7 @@
         <div class="modal-field">
           <label class="modal-label">✦ Payment ✦</label>
           <p style="font-family:var(--wf);font-size:.95rem;font-style:italic;color:var(--mist);margin-bottom:1rem">Pay securely now. Your card is handled by Stripe — details never touch our servers.</p>
-          <div id="card-element" style="border:1px solid rgba(201,168,76,.2);padding:1rem;border-radius:4px;margin-bottom:1rem"></div>
+          <div id="card-element" style="padding:1.05rem 1.1rem;margin-bottom:1rem"></div>
           <div id="card-errors" style="color:#e87c7c;font-family:var(--wf);font-style:italic;margin-bottom:1rem;display:none"></div>
         </div>
 
@@ -853,7 +853,7 @@ function openModal(id){
 
   document.getElementById('modalPieceName').textContent = l.title;
   document.getElementById('modalLister').textContent = l.lister_name;
-  document.getElementById('modalPrice').textContent = '$' + l.price_per_night + ' / night · 40% goes to the lender';
+  document.getElementById('modalPrice').textContent = '$' + l.price_per_night + ' / night';
   document.getElementById('wantSubject').value = '✦ I Want This: ' + l.title;
   document.getElementById('wantPieceId').value = l.id;
   document.getElementById('wantPieceNameField').value = l.title;
@@ -916,6 +916,7 @@ window.addEventListener('load', function() {
   try {
     stripe = Stripe('pk_live_51Tbug7LIWK8TMVW8sxav8n9JzyBQndAn6SdoH5Lf5Ie2bHt4QXaQJTQhhE3VI2kLsRNSeQPAFULQdS0D02Rrz3gU002d0idOAi');
     stripeElements = stripe.elements({
+      fonts: [{ cssSrc: 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500&display=swap' }],
       appearance: {
         theme: 'night',
         variables: {
@@ -940,11 +941,12 @@ function mountCard(){
     cardElement = stripeElements.create('card', {
       style: {
         base: {
-          color: '#f2ead6',
-          fontFamily: '"Cormorant Garamond",serif',
+          color: '#f6f2e4',
+          fontFamily: '"Cormorant Garamond",Georgia,serif',
           fontSize: '18px',
-          fontStyle: 'italic',
-          '::placeholder': { color: '#4a6e55' }
+          fontWeight: '500',
+          iconColor: '#f2d98f',
+          '::placeholder': { color: '#b9a6b0' }
         },
         invalid: { color: '#e87c7c' }
       }
@@ -1053,6 +1055,7 @@ async function submitPaymentFromModal(){
         amount: rentalAmount,
         tip: tip,
         lender_stripe_id: activeListing.lender_stripe_id || '',
+        listing_id: activeListing.id,
         description: activeListing.title + ' — 1 night rental',
         renter_email: document.querySelector('#wantForm [name="renter_email"]').value,
         renter_name: document.querySelector('#wantForm [name="renter_name"]').value

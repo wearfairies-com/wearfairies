@@ -157,7 +157,6 @@
     @media(max-width:700px){.form-row,.form-row.thirds{grid-template-columns:1fr}.form-section{padding:5rem 1.5rem 7rem}.tabs{flex-direction:column;align-items:center}.tab-btn:first-child{border-right:1px solid rgba(201,168,76,.2);border-bottom:none}footer{flex-direction:column;align-items:flex-start}}
   </style>
   <link rel="stylesheet" href="wf-theme.css"/>
-  <script src="wf-live.js" defer blocking="render"></script>
   <link rel="manifest" href="/manifest.json"/>
   <link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
   <meta name="mobile-web-app-capable" content="yes"/>
@@ -166,6 +165,7 @@
   <meta name="apple-mobile-web-app-title" content="WearFairies"/>
 </head>
 <body>
+<script src="wf-live.js"></script>
 
 <!-- Vintage corner ornaments — see the .corner-orn block in <style>.
      One SVG, rotated/mirrored by CSS into all four corners, so the
@@ -329,7 +329,8 @@
   <div class="form-wrap">
     <div class="form-intro">
       <h2 class="form-title">List Your <em>Piece</em></h2>
-      <p class="form-sub">Fill in the details. Your listing goes to WF for approval — once approved it appears live on the wardrobe. You earn 40% of every rental, paid straight to your account.</p>
+      <p class="form-sub">Fill in the details. Your listing goes to WF for approval — once approved it appears live on the wardrobe. You list it; we do everything else. You earn 40% of every rental, paid straight to your account.</p>
+      <p class="form-sub" style="margin-top:1rem;color:var(--ember)">✦ Founding lenders: our first 20 keep <b>50%</b> of every rental for six months.</p>
     </div>
 
     <form id="lendForm">
@@ -530,8 +531,8 @@
       </div>
 
       <div class="g-rule"><div class="g-rule-line"></div><div class="g-rule-gem"></div><div class="g-rule-line"></div></div>
-      <span class="form-section-label">✦ Add a Tip for Your Delivery ✦</span>
-      <p style="font-family:var(--wf);font-size:1rem;font-style:italic;color:var(--ghost);text-align:center;margin-bottom:2rem">100% of your tip goes directly to your WF delivery person.</p>
+      <span class="form-section-label">✦ Add a Tip ✦</span>
+      <p style="font-family:var(--wf);font-size:1rem;font-style:italic;color:var(--ghost);text-align:center;margin-bottom:2rem">Optional, and always appreciated.</p>
       <div class="tip-options">
         <button type="button" class="tip-btn" onclick="setTip(3,this)">$3</button>
         <button type="button" class="tip-btn" onclick="setTip(5,this)">$5</button>

@@ -125,7 +125,6 @@
     }
   </style>
   <link rel="stylesheet" href="wf-theme.css"/>
-  <script src="wf-live.js" defer blocking="render"></script>
   <link rel="manifest" href="/manifest.json"/>
   <link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
   <meta name="mobile-web-app-capable" content="yes"/>
@@ -134,6 +133,7 @@
   <meta name="apple-mobile-web-app-title" content="WearFairies"/>
 </head>
 <body>
+<script src="wf-live.js"></script>
 
 <!-- Vintage corner ornaments — see the .corner-orn block in <style>.
      One SVG, rotated/mirrored by CSS into all four corners, so the
@@ -240,7 +240,7 @@
         
         <div class="stripe-box">
           <p class="stripe-status disconnected" id="stripeStatus">✕ Not Connected</p>
-          <p style="font-family:var(--wf);font-size:.9rem;font-style:italic;color:var(--ghost);margin-bottom:1rem">Connect your Stripe account to receive your payouts. You earn 40% of every rental, released once the piece has been delivered to the renter.</p>
+          <p id="shareText" style="font-family:var(--wf);font-size:.9rem;font-style:italic;color:var(--ghost);margin-bottom:1rem">Connect your Stripe account to receive your payouts. You earn 40% of every rental, released once the piece has been delivered to the renter.</p>
           <button class="btn btn-primary" onclick="connectStripe()" id="stripeBtn">Connect Stripe ✦</button>
         </div>
       </div>
@@ -297,6 +297,14 @@
     if(profileRes.data) {
       lenderProfile = profileRes.data;
       updateStripeStatus();
+      // Founding lenders see their 50% and when it runs until.
+      if (lenderProfile.founding && lenderProfile.founding_until && new Date(lenderProfile.founding_until) > new Date()) {
+        var until = new Date(lenderProfile.founding_until).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        document.getElementById('shareText').innerHTML =
+          '<span style="color:var(--ember);font-style:normal;font-weight:600;letter-spacing:.12em;text-transform:uppercase;font-size:.78rem">✦ Founding lender</span><br>' +
+          'Connect your Stripe account to receive your payouts. You earn <b>50%</b> of every rental until ' + until +
+          ', then 40%. Payouts are released once the piece has been delivered to the renter.';
+      }
     }
 
     // Load listings
