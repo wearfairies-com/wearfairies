@@ -330,7 +330,7 @@
     <div class="form-intro">
       <h2 class="form-title">List Your <em>Piece</em></h2>
       <p class="form-sub">Fill in the details. Your listing goes to WF for approval — once approved it appears live on the wardrobe. You list it; we do everything else.</p>
-      <p class="form-sub" style="margin-top:1rem;color:var(--ember)">You keep <b>40%</b> of every rental, paid to your account once it's delivered.<br>✦ Founding lenders, our first 20, keep <b>50%</b> for their first six months.</p>
+      <p class="form-sub" style="margin-top:1rem;color:var(--ember)">You keep <b>40%</b> of every rental, paid to your account once it's delivered.<br>To get paid, you'll connect Stripe from your dashboard. It's free and takes about five minutes.<br>✦ Founding lenders, our first 20, keep <b>50%</b> for their first six months.</p>
     </div>
 
     <form id="lendForm">
@@ -461,6 +461,8 @@
     <div class="success-msg" id="lendSuccess">
       <p class="success-title">You are in the circle ✦</p>
       <p class="success-sub">Your listing has been submitted and is pending approval. We will be in touch within 24 hours.</p>
+      <p class="success-sub" style="margin-top:1.4rem;color:var(--ivory)"><b>One step left:</b> connect Stripe from your dashboard so we can pay you. Your piece goes live once it's connected.</p>
+      <a href="dashboard.html" class="submit-btn" style="display:inline-block;text-decoration:none;margin-top:1.6rem">Go to my dashboard ✦</a>
     </div>
   </div>
 </section>
@@ -763,24 +765,22 @@
           availability: 'available'
         };
 
-        // Upload photos to Supabase Storage first
-        var imageUrl = '';
-        if(selectedPhotos.length > 0) {
-          var photo = selectedPhotos[0];
-          var ext = photo.file.name.split('.').pop();
-          var fileName = 'listing-' + Date.now() + '.' + ext;
-          var uploadResult = await db.storage
-            .from('listings')
-            .upload(fileName, photo.file, { cacheControl: '3600', upsert: false });
-          
-          if(!uploadResult.error) {
-            var urlResult = db.storage.from('listings').getPublicUrl(fileName);
-            imageUrl = urlResult.data.publicUrl;
-          }
+        // Upload every photo the lender picked (up to 5). The first becomes
+        // the cover on the wardrobe; the others are shown in the gallery.
+        var photoUrls = [];
+        for(var pi = 0; pi < selectedPhotos.length; pi++) {
+          try {
+            var pf = selectedPhotos[pi].file;
+            var pext = (pf.name.split('.').pop() || 'jpg').toLowerCase();
+            var pname = 'listing-' + Date.now() + '-' + pi + '.' + pext;
+            var up = await db.storage.from('listings')
+              .upload(pname, pf, { cacheControl: '3600', upsert: false });
+            if(!up.error) photoUrls.push(db.storage.from('listings').getPublicUrl(pname).data.publicUrl);
+            else console.error('photo upload failed:', up.error);
+          } catch(pe) { console.error('photo upload failed:', pe); }
         }
-
-        // Add image URL to listing data
-        listingData.image_url = imageUrl;
+        listingData.image_url = photoUrls[0] || '';
+        if(photoUrls.length > 1) listingData.photos = photoUrls.slice(1);
 
         // Condition photos — optional, so a failure here must never block
         // the listing. Stored in the same bucket, under a cond- prefix.
@@ -803,6 +803,12 @@
 
         // Insert to Supabase
         var result = await db.from('listings').insert([listingData]);
+        // If the extra-photos column hasn't been added in Supabase yet,
+        // save the listing with its cover photo rather than failing.
+        if(result.error && listingData.photos && /photos/i.test(result.error.message || '')) {
+          delete listingData.photos;
+          result = await db.from('listings').insert([listingData]);
+        }
 
         if(result.error) {
           console.error('Supabase error:', result.error);

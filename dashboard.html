@@ -213,6 +213,14 @@
     </div>
   </nav>
 
+  <div id="stripeNudge" style="display:none;max-width:1120px;margin:1.6rem auto 0;width:calc(100% - 32px)">
+    <div class="section" style="text-align:center;padding:2rem 1.6rem">
+      <p style="font-family:var(--wf);font-size:.78rem;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:var(--mint,#c4e6d6);margin-bottom:.6rem">✦ One step left</p>
+      <h2 class="section-title" style="margin-bottom:.8rem">Connect Stripe so we can <em style="white-space:nowrap">pay you</em></h2>
+      <p style="font-family:var(--wf);font-size:1.05rem;color:var(--mist);max-width:34rem;margin:0 auto 1.4rem;line-height:1.6">Your earnings are sent straight to your bank through Stripe. It's free and takes about five minutes. Your pieces go live on the wardrobe once Stripe is connected.</p>
+      <button class="btn btn-primary" onclick="connectStripe()">Connect Stripe ✦</button>
+    </div>
+  </div>
   <div class="dashboard-content">
     <!-- LEFT COLUMN -->
     <div>
@@ -240,7 +248,7 @@
         
         <div class="stripe-box">
           <p class="stripe-status disconnected" id="stripeStatus">✕ Not Connected</p>
-          <p id="shareText" style="font-family:var(--wf);font-size:.9rem;font-style:italic;color:var(--ghost);margin-bottom:1rem">Connect your Stripe account to receive your payouts. You earn 40% of every rental, released once the piece has been delivered to the renter.</p>
+          <p id="shareText" style="font-family:var(--wf);font-size:.9rem;font-style:italic;color:var(--ghost);margin-bottom:1rem">Connect your Stripe account to receive your payouts. You earn 40% of every rental, released once the piece has been delivered to the renter. Your pieces go live once Stripe is connected.</p>
           <button class="btn btn-primary" onclick="connectStripe()" id="stripeBtn">Connect Stripe ✦</button>
         </div>
       </div>
@@ -364,12 +372,15 @@
     // Only a real Stripe account id counts. Anything else means the
     // handshake never finished and no money would reach this lender.
     var acct = lenderProfile.stripe_connected_account;
+    var nudge = document.getElementById('stripeNudge');
     if(typeof acct === 'string' && acct.indexOf('acct_') === 0) {
+      if(nudge) nudge.style.display = 'none';
       statusEl.textContent = '✓ Connected';
       statusEl.classList.remove('disconnected');
       statusEl.classList.add('connected');
       btnEl.textContent = 'Manage Stripe';
     } else {
+      if(nudge) nudge.style.display = 'block';
       statusEl.textContent = '✕ Not Connected';
       statusEl.classList.add('disconnected');
       statusEl.classList.remove('connected');

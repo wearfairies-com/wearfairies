@@ -132,9 +132,9 @@
     }
   </style>
   <link rel="stylesheet" href="wf-theme.css"/>
-  <script src="wf-live.js" defer blocking="render"></script>
 </head>
 <body>
+<script src="wf-live.js"></script>
 
 <!-- LOGIN -->
 <div class="login-screen" id="loginScreen">
@@ -312,10 +312,13 @@
 
   /* ── LOAD ALL DATA ── */
   async function loadAll(){
-    const [listingsRes, requestsRes] = await Promise.all([
+    const [listingsRes, requestsRes, lendersRes] = await Promise.all([
       db.from('listings').select('*').order('created_at',{ascending:false}),
-      db.from('rental_requests').select('*').order('created_at',{ascending:false})
+      db.from('rental_requests').select('*').order('created_at',{ascending:false}),
+      db.from('lenders').select('email, stripe_connected_account')
     ]);
+    window.__stripeByEmail = {};
+    (lendersRes.data || []).forEach(x=>{ if(x.email && typeof x.stripe_connected_account==='string' && x.stripe_connected_account.indexOf('acct_')===0) window.__stripeByEmail[x.email.toLowerCase()] = true; });
 
     const listings = listingsRes.data || [];
     const requests = requestsRes.data || [];
@@ -360,6 +363,7 @@
             <p class="admin-card-title">${l.title}</p>
             <p class="admin-card-meta">Listed by <span>${l.lister_name}</span> · ${l.lister_email} · ${l.lister_phone||'—'}</p>
             <p class="admin-card-meta" style="margin-top:.2rem">${timeAgo(l.created_at)}</p>
+            <p class="admin-card-meta" style="margin-top:.35rem">${stripeReady(l)?'<span style="color:#6fcf97;font-style:normal">✓ Stripe connected</span>':'<span style="color:#e87c7c;font-style:normal">✕ Stripe not connected yet, they can\'t be paid</span>'}</p>
           </div>
           <span class="status-badge ${l.status}">${l.status}</span>
         </div>
@@ -373,12 +377,13 @@
           <div class="detail-item"><p class="detail-label">ZIP</p><p class="detail-value">${l.zip||'—'}</p></div>
         </div>
 
+        ${[l.image_url].concat(l.photos||[]).filter(Boolean).length ? `<div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.2rem">${[l.image_url].concat(l.photos||[]).filter(Boolean).map(u=>`<a href="${u}" target="_blank" rel="noopener"><img src="${u}" alt="" style="width:68px;height:90px;object-fit:cover;border-radius:8px;border:1px solid rgba(255,255,255,.18)"/></a>`).join('')}</div>` : ''}
         ${l.description?`<p class="admin-card-desc">"${l.description}"</p>`:''}
 
         <p class="admin-card-address">📍 ${[l.street_address,l.apt,l.city,l.state,l.zip].filter(Boolean).join(', ')}</p>
 
         <div class="admin-card-actions">
-          ${l.status!=='approved'?`<button class="action-btn approve" onclick="updateStatus('${l.id}','approved')">✓ Approve & Go Live</button>`:''}
+          ${l.status!=='approved'?`<button class="action-btn approve" onclick="approveListing('${l.id}', ${stripeReady(l)})">✓ Approve & Go Live</button>`:''}
           ${l.status!=='rejected'?`<button class="action-btn reject" onclick="updateStatus('${l.id}','rejected')">✕ Reject</button>`:''}
           ${l.status==='approved'?`<button class="action-btn edit" onclick="toggleAvailability('${l.id}','${l.availability}')">Mark as ${l.availability==='available'?'Taken':'Available'}</button>`:''}
           <button class="action-btn delete" onclick="deleteListing('${l.id}')">Delete</button>
@@ -465,6 +470,15 @@
   }
 
   /* ── ACTIONS ── */
+  function stripeReady(l){
+    if(typeof l.lender_stripe_id==='string' && l.lender_stripe_id.indexOf('acct_')===0) return true;
+    return !!(window.__stripeByEmail && l.lister_email && window.__stripeByEmail[l.lister_email.toLowerCase()]);
+  }
+  function approveListing(id, ready){
+    if(!ready && !confirm('This lender hasn\'t connected Stripe yet, so they can\'t be paid automatically. Approve anyway?')) return;
+    updateStatus(id, 'approved');
+  }
+
   async function updateStatus(id, status){
     const { error } = await db
       .from('listings')
