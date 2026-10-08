@@ -206,11 +206,7 @@ window.WF_PALETTES = {
     if (document.hidden){ remember(); if (raf) cancelAnimationFrame(raf); raf = null; }
     else if (!raf && !still){ raf = requestAnimationFrame(draw); }
   });
-  /* links inside the site: save the moment of the click too */
-  document.addEventListener('click', function(e){
-    var a = e.target.closest && e.target.closest('a[href]');
-    if (a && a.origin === location.origin) remember();
-  }, true);
+  window.__wfRemember = remember;
   if (!still) raf = requestAnimationFrame(draw);
 })();
 
@@ -250,4 +246,128 @@ window.WF_PALETTES = {
     raf = requestAnimationFrame(draw);
     document.addEventListener('visibilitychange', function(){ if (document.hidden){ cancelAnimationFrame(raf); raf = null; } else if (!raf) raf = requestAnimationFrame(draw); });
   }
+})();
+
+/* MOVING BETWEEN PAGES
+   Works the same in Safari, Chrome and Firefox: when you tap a link to another
+   page, the words and panels dissolve away while the silk keeps flowing and the
+   menu bar stays put. The browser keeps that picture on screen until the next
+   page is ready; the next page already has the silk drawn in the same place, so
+   its words simply dissolve in on top and the colour melts across. */
+(function(){
+  var root = document.documentElement;
+  var calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.addEventListener('click', function(e){
+    if (calm || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    var a = e.target.closest && e.target.closest('a[href]');
+    if (!a || a.hasAttribute('download')) return;
+    if (a.target && a.target !== '_self') return;
+    var raw = a.getAttribute('href') || '';
+    if (!raw || raw.charAt(0) === '#' || /^(mailto:|tel:|sms:|javascript:)/i.test(raw)) return;
+    if (a.origin !== location.origin) return;
+    if (a.pathname === location.pathname && a.search === location.search) return;  /* same page, just a jump */
+    e.preventDefault();
+    if (window.__wfRemember) window.__wfRemember();
+    root.classList.add('wf-leaving');
+    var dest = a.href;
+    setTimeout(function(){ location.href = dest; }, 340);
+  });
+  /* coming back with the Back button: show the page again */
+  window.addEventListener('pageshow', function(e){ if (e.persisted) root.classList.remove('wf-leaving'); });
+})();
+
+/* ADD TO HOME SCREEN
+   A small card on phones that tells people they can keep WearFairies on their
+   home screen, where it opens like an app. It appears a few seconds after
+   opening the homepage or the wardrobe, shows the right steps for iPhone or
+   Android, closes with one tap, stays away for three weeks once closed, and
+   never shows if the site is already on their home screen. The footer also
+   gets an "Add to home screen" link that brings the card back any time. */
+(function(){
+  if (/fairy-door/.test(location.pathname)) return;
+  var standalone = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+  if (standalone) return;
+  var ua = navigator.userAgent || '';
+  var ios = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  var android = /Android/.test(ua);
+  if (!ios && !android) return;
+
+  var installEvent = null;
+  window.addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); installEvent = e; });
+  window.addEventListener('appinstalled', function(){ hide(true); });
+
+  function get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
+  function set(k, v){ try { localStorage.setItem(k, v); } catch(e){} }
+
+  var SHARE = '<svg class="wf-a2hs-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 10H6.5A1.5 1.5 0 0 0 5 11.5v8A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5v-8a1.5 1.5 0 0 0-1.5-1.5H16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
+  var DOTS = '<svg class="wf-a2hs-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.7" fill="currentColor"/><circle cx="12" cy="12" r="1.7" fill="currentColor"/><circle cx="12" cy="19" r="1.7" fill="currentColor"/></svg>';
+
+  var card = null;
+  function build(){
+    if (card) return card;
+    card = document.createElement('div');
+    card.className = 'wf-a2hs';
+    card.setAttribute('role', 'dialog');
+    card.setAttribute('aria-label', 'Add WearFairies to your home screen');
+    var how;
+    if (ios) how = 'Tap ' + SHARE + ' then <b>Add to Home Screen</b>.';
+    else if (installEvent) how = 'One tap and it opens like an app.';
+    else how = 'Tap ' + DOTS + ' in your browser, then <b>Add to Home screen</b>.';
+    card.innerHTML =
+      '<img class="wf-a2hs-logo" src="/apple-touch-icon.png" alt=""/>' +
+      '<div class="wf-a2hs-body">' +
+        '<p class="wf-a2hs-title">Keep WearFairies <em>close</em></p>' +
+        '<p class="wf-a2hs-text">Add us to your home screen. ' + how + '</p>' +
+        '<div class="wf-a2hs-actions">' +
+          (android && installEvent ? '<button type="button" class="wf-a2hs-add">Add to Home Screen</button>' : '') +
+          '<button type="button" class="wf-a2hs-later">Not now</button>' +
+        '</div>' +
+      '</div>' +
+      '<button type="button" class="wf-a2hs-x" aria-label="Close">&times;</button>';
+    document.body.appendChild(card);
+    card.querySelector('.wf-a2hs-later').addEventListener('click', function(){ hide(true); });
+    card.querySelector('.wf-a2hs-x').addEventListener('click', function(){ hide(true); });
+    var add = card.querySelector('.wf-a2hs-add');
+    if (add) add.addEventListener('click', function(){
+      if (!installEvent) return;
+      installEvent.prompt();
+      installEvent.userChoice.then(function(){ installEvent = null; hide(true); });
+    });
+    return card;
+  }
+  function show(){
+    if (card) { card.remove(); card = null; }   /* rebuild so the steps match this phone */
+    build();
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){ card.classList.add('in'); }); });
+  }
+  function hide(remember){
+    if (remember) set('wfA2hsClosed', String(Date.now()));
+    if (!card) return;
+    card.classList.remove('in');
+    var c = card; card = null;
+    setTimeout(function(){ c.remove(); }, 450);
+  }
+  window.__wfShowA2hs = show;
+
+  /* a quiet link in the footer, for anyone who wants it later */
+  function footerLink(){
+    var list = document.querySelector('footer .foot-links, footer ul');
+    if (!list || list.querySelector('.wf-a2hs-link')) return;
+    var li = document.createElement('li');
+    var a = document.createElement('a');
+    a.href = '#'; a.className = 'wf-a2hs-link'; a.textContent = 'Add to home screen';
+    a.addEventListener('click', function(e){ e.preventDefault(); show(); });
+    li.appendChild(a); list.appendChild(li);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', footerLink); else footerLink();
+
+  /* only on the browsing pages, never in the middle of a form */
+  var page = document.documentElement.getAttribute('data-wf');
+  if (page !== 'home' && page !== 'wardrobe') return;
+  var closed = parseInt(get('wfA2hsClosed') || '0', 10);
+  if (closed && Date.now() - closed < 21 * 24 * 3600 * 1000) return;
+  setTimeout(function(){
+    if (document.querySelector('.modal-overlay.open')) return;   /* not over an open dress */
+    show();
+  }, 6000);
 })();
